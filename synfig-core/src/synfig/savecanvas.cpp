@@ -770,6 +770,9 @@ synfig::save_canvas(const String &filename, Canvas::ConstHandle canvas)
 
 	if (filename_extension(filename) == ".sifz")
 		xmlSetCompressMode(9);
+	else if (filename_extension(filename) == ".sifp")
+		/* TODO: sifp */ 
+		xmlSetCompressMode(9);
 	else
 		xmlSetCompressMode(0);
 

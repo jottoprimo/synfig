@@ -631,7 +631,7 @@ CanvasInterface::import(const synfig::String &filename, synfig::String &errors, 
 	}
 
 	// If this is a SIF file, then we need to do things slightly differently
-	if(ext=="sif" || ext=="sifz")try
+	if(ext=="sif" || ext=="sifz" || ext=="sifp")try
 	{
 		Canvas::Handle outside_canvas(synfig::open_canvas(filename, errors, warnings));
 		if(!outside_canvas)
