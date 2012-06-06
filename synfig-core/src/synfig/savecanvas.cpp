@@ -57,6 +57,12 @@
 #include "gradient.h"
 #include <errno.h>
 
+#include <zip.h>
+#include <string.h>
+#include <errno.h>
+#include <stdio.h>
+#include <stdlib.h>
+
 extern "C" {
 #include <libxml/tree.h>
 }
@@ -770,9 +776,30 @@ synfig::save_canvas(const String &filename, Canvas::ConstHandle canvas)
 
 	if (filename_extension(filename) == ".sifz")
 		xmlSetCompressMode(9);
-	else if (filename_extension(filename) == ".sifp")
-		/* TODO: sifp */ 
-		xmlSetCompressMode(9);
+	else if (filename_extension(filename) == ".sifp"){
+		// TODO: sifp 
+		//xmlSetCompressMode(9);
+		//std::cout << filename;
+		struct zip *zip_archive;
+		struct zip_source *zip_src;
+		//char *filen;
+		//char *ff;
+		String f;
+		int err;
+		//std::transform(filename.begin(), filename.end(),filename.begin(), filen);
+		char* filen = new char[filename.length()+1];
+		strcpy(filen, filename.c_str());
+		zip_archive=zip_open(filen, ZIP_CREATE, &err);
+		f = canvas_to_string(canvas);
+		//td::transform(f.begin(), f.end(),f.begin(), ff);
+		//strcpy(f,ff);
+		char* ff = new char[f.length()+1];
+		strcpy(ff, f.c_str());
+		zip_src=zip_source_buffer(zip_archive, ff, strlen(ff), 0);
+		zip_add(zip_archive, filen, zip_src);
+		zip_close(zip_archive);
+		xmlSetCompressMode(0);
+		}
 	else
 		xmlSetCompressMode(0);
 

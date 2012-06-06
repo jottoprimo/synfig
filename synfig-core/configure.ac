@@ -395,6 +395,8 @@ if test $with_jpeg = "no" ; then {
 
 AC_LIB_LTDL
 
+AC_CHECK_LIB([zip], [zip_open], , [AC_MSG_ERROR([libzip not found, see http://www.nih.at/libzip])])
+
 ALL_LINGUAS="es fr it ru de en_GB zh_CN ro no_NO pt_BR pl_PL fa_IR nl sk_SK lt el_GR"
 AM_GNU_GETTEXT([external])
 # This is here so autoreconf will run autopoint
