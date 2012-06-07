@@ -408,6 +408,10 @@ PKG_CHECK_MODULES(ETL, [ETL >= 0.04.15],,[
 ])
 CONFIG_DEPS="$CONFIG_DEPS ETL"
 
+PKG_CHECK_MODULES(LIBZIP, libzip,,[
+	AC_MSG_ERROR([ ** libzip not found. You need to install it.])
+])
+CONFIG_DEPS="$CONFIG_DEPS libzip"
 
 PKG_CHECK_MODULES(LIBXMLPP, libxml++-2.6,[
 	CONFIG_DEPS="$CONFIG_DEPS libxml++-2.6"
@@ -637,8 +641,8 @@ AC_SUBST(CONFIG_CFLAGS)
 AC_SUBST(CONFIG_DEPS)
 AC_SUBST(ETL_CFLAGS)
 
-SYNFIG_LIBS="$VIMAGE_LIBS $LIBXMLPP_LIBS $ETL_LIBS $LIBSIGC_LIBS $LTLIBINTL"
-SYNFIG_CFLAGS="$LIBXMLPP_CFLAGS $ETL_CFLAGS $LIBSIGC_CFLAGS $CONFIG_CFLAGS -DSYNFIG_NO_DEPRECATED -DLOCALEDIR=\\\"$localedir\\\""
+SYNFIG_LIBS="$VIMAGE_LIBS $LIBZIP_LIBS $LIBXMLPP_LIBS $ETL_LIBS $LIBSIGC_LIBS $LTLIBINTL"
+SYNFIG_CFLAGS="$LIBZIP_CFLAGS $LIBXMLPP_CFLAGS $ETL_CFLAGS $LIBSIGC_CFLAGS $CONFIG_CFLAGS -DSYNFIG_NO_DEPRECATED -DLOCALEDIR=\\\"$localedir\\\""
 
 CONFIG_CFLAGS="`echo $CONFIG_CFLAGS | sed s/-mno-cygwin//g | sed s/-mwindows//g`"
 SYNFIG_CFLAGS="`echo $SYNFIG_CFLAGS | sed s/-mno-cygwin//g | sed s/-mwindows//g`"
@@ -731,6 +735,7 @@ Using OpenEXR's \"half\" type ------> $use_openexr_half
 "'$'"CXX -----------------------------> '$CXX'
 "'$'"CXXFLAGS ------------------------> '$CXXFLAGS'
 "'$'"SYNFIG_LIBS ---------------------> '$SYNFIG_LIBS'
+"'$'"LIBZIP_LIBS ---------------------> '$LIBZIP_LIBS'
 "'$'"LIBXMLPP_LIBS -------------------> '$LIBXMLPP_LIBS'
 "'$'"ETL_LIBS ------------------------> '$ETL_LIBS'
 "'$'"LIBSIGC_LIBS --------------------> '$LIBSIGC_LIBS'
