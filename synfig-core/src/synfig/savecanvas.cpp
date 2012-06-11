@@ -59,9 +59,13 @@
 
 #include <zip.h>
 #include <string.h>
+#include <string>
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <cstring>
+
+#include <libgen.h>
 
 extern "C" {
 #include <libxml/tree.h>
@@ -777,27 +781,28 @@ synfig::save_canvas(const String &filename, Canvas::ConstHandle canvas)
 	if (filename_extension(filename) == ".sifz")
 		xmlSetCompressMode(9);
 	else if (filename_extension(filename) == ".sifp"){
-		// TODO: sifp 
+		/* // TODO: sifp 
 		//xmlSetCompressMode(9);
 		//std::cout << filename;
 		struct zip *zip_archive;
 		struct zip_source *zip_src;
 		//char *filen;
 		//char *ff;
-		String f;
+		std::string f;
 		int err;
 		//std::transform(filename.begin(), filename.end(),filename.begin(), filen);
 		char* filen = new char[filename.length()+1];
 		strcpy(filen, filename.c_str());
-		zip_archive=zip_open(filen, ZIP_CREATE, &err);
+		zip_archive=zip_open("1.zip", ZIP_CREATE, &err);
 		f = canvas_to_string(canvas);
+		
 		//td::transform(f.begin(), f.end(),f.begin(), ff);
 		//strcpy(f,ff);
 		char* ff = new char[f.length()+1];
 		strcpy(ff, f.c_str());
 		zip_src=zip_source_buffer(zip_archive, ff, strlen(ff), 0);
 		zip_add(zip_archive, filen, zip_src);
-		zip_close(zip_archive);
+		zip_close(zip_archive); */
 		xmlSetCompressMode(0);
 		}
 	else
@@ -809,8 +814,7 @@ synfig::save_canvas(const String &filename, Canvas::ConstHandle canvas)
 		xmlpp::Document document;
 
 		encode_canvas_toplevel(document.create_root_node("canvas"),canvas);
-
-		document.write_to_file_formatted(tmp_filename);
+		if (filename_extension(filename) != ".sifp") { document.write_to_file_formatted(tmp_filename);
 
 #ifdef _WIN32
 		// On Win32 platforms, rename() has bad behavior. work around it.
@@ -824,11 +828,41 @@ synfig::save_canvas(const String &filename, Canvas::ConstHandle canvas)
 			return false;
 		}
 		remove(old_file);
-#else
+#else	
 		if(rename(tmp_filename.c_str(),filename.c_str())!=0)
 		{
 			synfig::error("synfig::save_canvas(): Unable to rename file to correct filename, errno=%d",errno);
 			return false;
+		} 
+		}
+		
+		if (filename_extension(filename) == ".sifp"){
+			// TODO: sifp 
+			//xmlSetCompressMode(9);
+			//std::cout << filename;
+			struct zip *zip_archive;
+			struct zip_source *zip_src;
+			//char *ff;
+			std::string f;
+			int err;
+			//std::transform(filename.begin(), filename.end(),filename.begin(), filen);
+			char* filename_char = new char[filename.length()+1];
+			strcpy(filename_char, filename.c_str());
+			zip_archive=zip_open(filename_char, ZIP_CREATE, &err);
+			f = canvas_to_string(canvas);
+			
+			//td::transform(f.begin(), f.end(),f.begin(), ff);
+			//strcpy(f,ff);
+			char* f_char = new char[f.length()+1];
+			strcpy(f_char, f.c_str());
+				
+				
+			zip_src=zip_source_buffer(zip_archive, f_char, strlen(f_char), 0);
+			zip_add(zip_archive, basename(filename_char), zip_src);
+			zip_close(zip_archive);
+			synfig::error("ZIP");
+			delete f_char;
+			delete filen;
 		}
 #endif
 	}
