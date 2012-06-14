@@ -1424,6 +1424,43 @@ Canvas::register_external_canvas(String file_name, Handle canvas)
 	externals_[file_name] = canvas;
 }
 
+void 
+Canvas::update_external_files_list()
+{
+	for (Canvas::const_iterator iter = begin(); iter != end();  iter++)
+	{
+		const etl::handle<Layer> layer = *iter;
+		std::string n;
+		n = layer->get_name();
+		synfig::info(layer->get_description().c_str());
+		if (n=="import")
+		{
+			ValueBase param = layer->get_param("filename");
+			if(param.get_type()==ValueBase::TYPE_STRING) 
+			{
+				std::string param_s = param.get(String());
+				external_image_list_.remove(param_s);
+				external_image_list_.push_back(param_s);
+				synfig::info("___");
+				std::list<std::string>::iterator iter2;
+				for (iter2 = external_image_list_.begin(); iter2!=external_image_list_.end(); iter2++)
+				{
+					std::string fname = *iter2;
+					synfig::info(fname.c_str());
+				}
+				synfig::info("___");
+			}
+		}
+		if(n=="PasteCanvas")
+		{
+			Layer_PasteCanvas* paste_canvas(static_cast<Layer_PasteCanvas*>(layer.get()));
+			Canvas::Handle paste_sub_canvas = paste_canvas->get_sub_canvas();
+			paste_sub_canvas->update_external_files_list();
+			synfig::info("%d",paste_sub_canvas -> size());
+		}
+	}
+}
+
 #ifdef _DEBUG
 void
 Canvas::show_externals(String file, int line, String text) const

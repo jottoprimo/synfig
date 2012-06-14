@@ -237,6 +237,9 @@ private:
 	//! Value to store temporarly the grow value for the child outline type layers
 	/*! \see get_grow_value set_grow_value */
 	Real grow_value;
+	
+	
+	std::list <std::string> external_image_list_;
 
 
 	/*
@@ -605,6 +608,8 @@ public:
 	//! Set/Get members for the grow value
 	Real get_grow_value()const;
 	void set_grow_value(Real x);
+	
+	void update_external_files_list();
 
 #ifdef _DEBUG
 	void show_externals(String file, int line, String text) const;

@@ -8,6 +8,7 @@
 **	Copyright (c) 2002-2005 Robert B. Quattlebaum Jr., Adrian Bentley
 **	Copyright (c) 2007, 2008 Chris Moore
 **  Copyright (c) 2011, 2012 Carlos López
+**  Copyright (c) 2012 Evgenij Katunov
 **
 **	This package is free software; you can redistribute it and/or
 **	modify it under the terms of the GNU General Public License as
@@ -835,7 +836,8 @@ synfig::save_canvas(const String &filename, Canvas::ConstHandle canvas)
 			return false;
 		} 
 		}
-		
+#endif
+
 		if (filename_extension(filename) == ".sifp"){
 			// TODO: sifp 
 			//xmlSetCompressMode(9);
@@ -860,11 +862,29 @@ synfig::save_canvas(const String &filename, Canvas::ConstHandle canvas)
 			zip_src=zip_source_buffer(zip_archive, f_char, strlen(f_char), 0);
 			zip_add(zip_archive, basename(filename_char), zip_src);
 			zip_close(zip_archive);
-			synfig::error("ZIP");
+			
+			//synfig::error("%d", canvas -> size());
+			//synfig::error(canvas[0]);
+			
+			//gen_external_files_list()
+			
+			/* for (Canvas::const_iterator iter = this->begin(); iter != canvas->end();  iter++){
+				const etl::handle<Layer> layer = *iter;
+				std::string n; 
+				n = layer->get_name();
+				if(n=="PasteCanvas"){
+					Layer_PasteCanvas* paste_canvas(static_cast<Layer_PasteCanvas*>(layer.get()));
+					Canvas::Handle paste_sub_canvas = paste_canvas->get_sub_canvas();
+					paste_sub_canvas-> gen_external_files_list();
+					synfig::info("%d",layer -> size());
+					}
+				synfig::info(n.c_str());
+			} */
+			
+			
 			delete f_char;
-			delete filen;
+			delete filename_char;
 		}
-#endif
 	}
 	catch(...) { synfig::error("synfig::save_canvas(): Caught unknown exception"); return false; }
 
