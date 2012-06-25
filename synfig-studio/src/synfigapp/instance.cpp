@@ -48,6 +48,11 @@
 #include <synfig/valuenode_range.h>
 #include <map>
 
+#include <libgen.h>
+#include <string>
+#include <string.h>
+
+
 #include "general.h"
 
 #endif
@@ -173,6 +178,39 @@ Instance::save_as(const synfig::String &file_name)
 	String old_file_name(get_file_name());
 
 	set_file_name(file_name);
+	
+	/* if (filename_extension(file_name) == ".sifp")
+	{
+		canvas_.all_externals_ = canvas_->get_external_files_list();
+	} */
+	canvas_->get_external_files_list();
+
+	map <std::string, std::string> images_map;
+
+	std::list<std::string>::iterator iter;
+
+	for (iter = canvas_->all_externals.begin(); iter != canvas_->all_externals.end(); iter++)
+	{
+		std::string image_path;
+		image_path = *iter;
+
+		char* image_path_char = new char[image_path.length()+1];
+		strcpy(image_path_char, image_path.c_str());
+		
+		std::string image_name_char = basename(image_path_char);
+		std::string image_name(image_name_char);
+		std::string image_extension = filename_extension(image_name);
+		image_name = filename_sans_extension(image_name);
+		std::string image_name_n = image_name+image_extension;
+		int count = 1;
+		while (images_map.count(image_name_n)==1)
+		{
+			std::string s(strprintf("%d",count));
+			image_name_n = image_name+"_"+s+image_extension;
+		}
+		synfig::info(image_name_n.c_str());
+		images_map[image_name_n]==image_path;
+	}
 
 	ret=save_canvas(file_name,canvas_);
 

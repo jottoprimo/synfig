@@ -240,6 +240,10 @@ private:
 	
 	
 	std::list <std::string> external_image_list_;
+	
+public:
+
+	std::list <std::string> all_externals;
 
 
 	/*
@@ -609,7 +613,11 @@ public:
 	Real get_grow_value()const;
 	void set_grow_value(Real x);
 	
-	void update_external_files_list();
+	void update_external_files_list(Canvas::Handle canvas);
+	
+	void external_files_list_add(std::string path, std::string param);
+	
+	void get_external_files_list();
 
 #ifdef _DEBUG
 	void show_externals(String file, int line, String text) const;

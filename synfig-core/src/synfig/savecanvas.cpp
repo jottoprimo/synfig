@@ -850,17 +850,75 @@ synfig::save_canvas(const String &filename, Canvas::ConstHandle canvas)
 			//std::transform(filename.begin(), filename.end(),filename.begin(), filen);
 			char* filename_char = new char[filename.length()+1];
 			strcpy(filename_char, filename.c_str());
-			zip_archive=zip_open(filename_char, ZIP_CREATE, &err);
+			zip_archive=zip_open(filename.c_str(), ZIP_CREATE, &err);
 			f = canvas_to_string(canvas);
 			
 			//td::transform(f.begin(), f.end(),f.begin(), ff);
 			//strcpy(f,ff);
-			char* f_char = new char[f.length()+1];
-			strcpy(f_char, f.c_str());
+			//char* f_char = new char[f.length()+1];
+			//strcpy(f_char, f.c_str());
 				
 				
-			zip_src=zip_source_buffer(zip_archive, f_char, strlen(f_char), 0);
+			zip_src=zip_source_buffer(zip_archive, f.c_str(), strlen(f.c_str()), 0);
 			zip_add(zip_archive, basename(filename_char), zip_src);
+			
+			std::list<std::string> external_files_list = canvas->all_externals;
+			std::list<std::string>::iterator iter;
+			
+			char* dir = dirname(filename_char);
+			
+			synfig::info("+++++++++");
+			
+			/* for (iter = external_files_list.begin(); iter != external_files_list.end(); iter++)
+			{
+				std::string external = *iter;
+				struct zip_source *zs;
+				
+				std::string abspath (dir);
+				abspath = abspath+"/"+external;
+				
+				zs=zip_source_file(zip_archive,abspath.c_str(), 0, -1);
+				
+				//synfig::info("abspath");
+				synfig::info(abspath.c_str());
+				
+				char* external_char = new char[external.length()+1];
+				strcpy(external_char, external.c_str());
+				
+				zip_add(zip_archive, basename(external_char), zs);
+				
+				//synfig::info(external.c_str());
+				
+				delete external_char;
+			}*/
+			
+			/*
+			for (iter = external_files_list.begin(); iter != external_files_list.end(); iter++)
+			{
+				std::string external = *iter;
+				struct zip_source *zs;
+				
+				//std::string abspath (dir);
+				//abspath = abspath+"/"+external;
+				
+				zs=zip_source_file(zip_archive,external.c_str(), 0, -1);
+				
+				//synfig::info("abspath");
+				synfig::info(external.c_str());
+				
+				char* external_char = new char[external.length()+1];
+				strcpy(external_char, external.c_str());
+				
+				zip_add(zip_archive, basename(external_char), zs);
+				
+				//synfig::info(external.c_str());
+				
+				delete external_char;
+			}*/
+			
+			synfig::info("+++++++++"); 
+			
+			
 			zip_close(zip_archive);
 			
 			//synfig::error("%d", canvas -> size());
@@ -882,7 +940,7 @@ synfig::save_canvas(const String &filename, Canvas::ConstHandle canvas)
 			} */
 			
 			
-			delete f_char;
+			//delete f_char;
 			delete filename_char;
 		}
 	}

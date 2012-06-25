@@ -173,8 +173,9 @@ synfig::open_canvas_as(const String &filename,const String &as,String &errors,St
 		return Canvas::Handle();
 	}
 	
-	canvas->update_external_files_list();
+	canvas->update_external_files_list(canvas);
 	
+	//canvas->get_external_files_list();
 	return canvas;
 }
 

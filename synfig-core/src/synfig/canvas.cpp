@@ -1425,40 +1425,93 @@ Canvas::register_external_canvas(String file_name, Handle canvas)
 }
 
 void 
-Canvas::update_external_files_list()
+Canvas::update_external_files_list(Canvas::Handle canvas)
 {
+	std::string path =get_file_path ();
 	for (Canvas::const_iterator iter = begin(); iter != end();  iter++)
 	{
 		const etl::handle<Layer> layer = *iter;
 		std::string n;
 		n = layer->get_name();
-		synfig::info(layer->get_description().c_str());
+		//synfig::info(layer->get_description().c_str());
 		if (n=="import")
 		{
 			ValueBase param = layer->get_param("filename");
 			if(param.get_type()==ValueBase::TYPE_STRING) 
 			{
 				std::string param_s = param.get(String());
-				external_image_list_.remove(param_s);
-				external_image_list_.push_back(param_s);
-				synfig::info("___");
+				canvas->external_files_list_add(path,param_s);
+				//synfig::info("___");
 				std::list<std::string>::iterator iter2;
 				for (iter2 = external_image_list_.begin(); iter2!=external_image_list_.end(); iter2++)
 				{
 					std::string fname = *iter2;
-					synfig::info(fname.c_str());
+				//	synfig::info(fname.c_str());
 				}
-				synfig::info("___");
+				//synfig::info("___");
 			}
 		}
 		if(n=="PasteCanvas")
 		{
 			Layer_PasteCanvas* paste_canvas(static_cast<Layer_PasteCanvas*>(layer.get()));
 			Canvas::Handle paste_sub_canvas = paste_canvas->get_sub_canvas();
-			paste_sub_canvas->update_external_files_list();
+			if (paste_sub_canvas->is_inline())
+				paste_sub_canvas->update_external_files_list(canvas);
+			else
+				paste_sub_canvas->update_external_files_list(paste_sub_canvas);
 			synfig::info("%d",paste_sub_canvas -> size());
 		}
 	}
+	/* synfig::info("___");
+	std::list<std::string>::iterator iter2;
+	for (iter2 = external_image_list_.begin(); iter2!=external_image_list_.end(); iter2++)
+	{
+		std::string fname = *iter2;
+		synfig::info(fname.c_str());
+	}
+	synfig::info("___"); */
+}
+
+void
+Canvas::external_files_list_add(std::string path, std::string param)
+{
+	external_image_list_.remove(path+ETL_DIRECTORY_SEPARATOR+param);
+	external_image_list_.push_back(path+ETL_DIRECTORY_SEPARATOR+param);
+}
+
+void
+Canvas::get_external_files_list()
+{
+	std::list<std::string>::iterator iter1;
+	std::list<std::string>::iterator iter2;
+	for (iter1 = external_image_list_.begin(); iter1 != external_image_list_.end(); iter1++)
+	{
+		std::string external = *iter1;
+		all_externals.push_back(external);
+	}
+	std::map<String, Handle>::iterator iter;
+	for (iter = externals_.begin(); iter != externals_.end(); iter++)
+	{
+		std::string first (iter->first);
+		etl::loose_handle<Canvas> second(iter->second);
+		/* synfig::info("***");
+		std::string desc = second->get_description ();
+		synfig::info(desc.c_str()); */
+		for (iter2 = second->external_image_list_.begin(); iter2!=second->external_image_list_.end(); iter2++)
+		{
+			std::string external = *iter2;
+			all_externals.remove(external);
+			all_externals.push_back(external);
+		}
+	}
+	synfig::info("***");
+	for (iter1 = all_externals.begin(); iter1 != all_externals.end(); iter1++)
+	{
+		std::string external = *iter1;
+		synfig::info(external.c_str());
+	}
+	synfig::info("***");	
+	//return all_externals;
 }
 
 #ifdef _DEBUG
