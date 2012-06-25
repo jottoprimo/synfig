@@ -1487,6 +1487,7 @@ Canvas::get_external_files_list()
 	for (iter1 = external_image_list_.begin(); iter1 != external_image_list_.end(); iter1++)
 	{
 		std::string external = *iter1;
+		all_externals.remove(external);
 		all_externals.push_back(external);
 	}
 	std::map<String, Handle>::iterator iter;

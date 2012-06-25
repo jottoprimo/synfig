@@ -209,7 +209,8 @@ Instance::save_as(const synfig::String &file_name)
 			std::string s(strprintf("%d",count));
 			image_name_n = image_name+"_"+s+image_extension;
 		}
-		images_map[image_name_n]==image_path;
+		//synfig::info(image_path.c_str());
+		images_map[image_name_n]=image_path;
 	}
 	if (filename_extension(file_name) == ".sifp")
 	{
@@ -220,7 +221,9 @@ Instance::save_as(const synfig::String &file_name)
 		std::map<std::string, std::string>::iterator iter;
 		for (iter=images_map.begin(); iter!=images_map.end(); iter++)
 		{
-			//(*iter).first;
+			synfig::info(((*iter).first).c_str());
+			synfig::info("|||||||||||||");
+			synfig::info(((*iter).second).c_str());
 			std::string image_name = (*iter).second;
 			struct zip_source *zs;
 
@@ -230,12 +233,14 @@ Instance::save_as(const synfig::String &file_name)
 			zs=zip_source_file(zip_archive,image_name.c_str(), 0, -1);
 			
 			//synfig::info("abspath");
-			synfig::info(image_name.c_str());
+			//synfig::info(image_name.c_str());
 			
 			//char* external_char = new char[external.length()+1];
 			//strcpy(external_char, external.c_str());
+
+			std::string in_zip_path = "/images/"+(*iter).first;
 			
-			zip_add(zip_archive, ((*iter).first).c_str(), zs);
+			zip_add(zip_archive, in_zip_path.c_str(), zs);
 			
 			//synfig::info(external.c_str());
 			
