@@ -48,6 +48,7 @@
 #include <synfig/valuenode_range.h>
 #include <map>
 
+#include <zip.h>
 #include <libgen.h>
 #include <string>
 #include <string.h>
@@ -179,10 +180,10 @@ Instance::save_as(const synfig::String &file_name)
 
 	set_file_name(file_name);
 	
-	/* if (filename_extension(file_name) == ".sifp")
+	if (filename_extension(file_name) == ".sifp")
 	{
-		canvas_.all_externals_ = canvas_->get_external_files_list();
-	} */
+		canvas_->get_external_files_list();
+	} 
 	canvas_->get_external_files_list();
 
 	map <std::string, std::string> images_map;
@@ -211,8 +212,16 @@ Instance::save_as(const synfig::String &file_name)
 		synfig::info(image_name_n.c_str());
 		images_map[image_name_n]==image_path;
 	}
-
-	ret=save_canvas(file_name,canvas_);
+	if (filename_extension(file_name) == ".sifp")
+	{
+		struct zip *zip_archive;
+		int err;
+		zip_archive=zip_open(file_name.c_str(), ZIP_CREATE, &err);
+		ret=save_canvas_to_zip(file_name, canvas_, zip_archive);
+		zip_close(zip_archive);
+	} 
+	else
+		ret=save_canvas(file_name,canvas_);
 
 	if(ret)
 	{

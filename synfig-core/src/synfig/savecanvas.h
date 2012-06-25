@@ -32,6 +32,8 @@
 #include "canvas.h"
 #include "releases.h"
 
+#include <zip.h>
+
 /* === M A C R O S ========================================================= */
 
 /* === T Y P E D E F S ===================================================== */
@@ -45,6 +47,8 @@ namespace synfig {
 //!	Saves a canvas to \a filename
 /*!	\return	\c true on success, \c false on error. */
 bool save_canvas(const String &filename, Canvas::ConstHandle canvas);
+
+bool save_canvas_to_zip(const String &filename, Canvas::ConstHandle canvas, struct zip *zip_archive);
 
 //! Stores a Canvas in a string in XML format
 /*! \return The string with the XML canvas definition */
