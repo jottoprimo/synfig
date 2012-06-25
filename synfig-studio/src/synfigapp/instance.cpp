@@ -209,7 +209,6 @@ Instance::save_as(const synfig::String &file_name)
 			std::string s(strprintf("%d",count));
 			image_name_n = image_name+"_"+s+image_extension;
 		}
-		synfig::info(image_name_n.c_str());
 		images_map[image_name_n]==image_path;
 	}
 	if (filename_extension(file_name) == ".sifp")
@@ -218,6 +217,30 @@ Instance::save_as(const synfig::String &file_name)
 		int err;
 		zip_archive=zip_open(file_name.c_str(), ZIP_CREATE, &err);
 		ret=save_canvas_to_zip(file_name, canvas_, zip_archive);
+		std::map<std::string, std::string>::iterator iter;
+		for (iter=images_map.begin(); iter!=images_map.end(); iter++)
+		{
+			//(*iter).first;
+			std::string image_name = (*iter).second;
+			struct zip_source *zs;
+
+			//std::string abspath (dir);
+			//abspath = abspath+"/"+external;
+			
+			zs=zip_source_file(zip_archive,image_name.c_str(), 0, -1);
+			
+			//synfig::info("abspath");
+			synfig::info(image_name.c_str());
+			
+			//char* external_char = new char[external.length()+1];
+			//strcpy(external_char, external.c_str());
+			
+			zip_add(zip_archive, ((*iter).first).c_str(), zs);
+			
+			//synfig::info(external.c_str());
+			
+			//delete external_char;
+		}
 		zip_close(zip_archive);
 	} 
 	else
