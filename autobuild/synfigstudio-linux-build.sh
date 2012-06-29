@@ -748,7 +748,7 @@ initialize()
 		gettext \
 		cvs \
 		libpng12-dev \
-		libjpeg62-dev \
+		libjpeg-turbo8-dev \
 		fontconfig \
 		libfreetype6-dev \
 		libfontconfig1-dev \
@@ -961,7 +961,7 @@ mkpackage()
 		mkpack
 	else
 		[ -d $HOME/synfig-packages ] || mkdir -p $HOME/synfig-packages
-		#DEB_LIST="build-essential,autoconf,automake,libltdl3-dev,libtool,gettext,cvs,libpng12-dev,libjpeg62-dev,libfreetype6-dev,libfontconfig1-dev,libgtk2.0-dev,libxml2-dev,bzip2,rpm,alien,xsltproc"
+		#DEB_LIST="build-essential,autoconf,automake,libltdl3-dev,libtool,gettext,cvs,libpng12-dev,libjpeg-turbo8-dev,libfreetype6-dev,libfontconfig1-dev,libgtk2.0-dev,libxml2-dev,bzip2,rpm,alien,xsltproc"
 		for ARCH in i386 amd64; do
 		if [[ $ARCH == 'i386' ]];then
 			SETARCH='linux32'
