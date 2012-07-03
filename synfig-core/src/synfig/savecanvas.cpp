@@ -868,7 +868,7 @@ synfig::save_canvas(const String &filename, Canvas::ConstHandle canvas)
 			
 			char* dir = dirname(filename_char);
 			
-			synfig::info("+++++++++");
+			synfig::info("+++++++++"); 
 			
 			/* for (iter = external_files_list.begin(); iter != external_files_list.end(); iter++)
 			{
@@ -972,8 +972,12 @@ synfig::save_canvas_to_zip(const String &filename, Canvas::ConstHandle canvas , 
 		char* filename_char = new char[filename.length()+1];
 		strcpy(filename_char, filename.c_str());
 		struct zip_source *zip_src;
-		std::string f = canvas_to_string (canvas);
-		zip_src=zip_source_buffer(zip_archive, f.c_str(), strlen(f.c_str()), 0);
+		std::string f = document.write_to_string_formatted();// (canvas);
+		//synfig::info(f.c_str());
+		char* f_char = new char[f.length()+1];
+		strcpy(f_char, f.c_str());
+		
+		zip_src=zip_source_buffer(zip_archive, f_char, strlen(f_char), 0);
 		zip_add(zip_archive, basename(filename_char), zip_src);
 			
 			

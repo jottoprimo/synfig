@@ -46,6 +46,7 @@
 #include <synfig/valuenode_wplist.h>
 #include <synfig/valuenode_scale.h>
 #include <synfig/valuenode_range.h>
+#include <synfig/layer_pastecanvas.h>
 #include <map>
 
 #include <zip.h>
@@ -186,7 +187,7 @@ Instance::save_as(const synfig::String &file_name)
 	} */
 	canvas_->get_external_files_list();
 
-	map <std::string, std::string> images_map;
+	//map <std::string, std::string> images_map;
 
 	std::list<std::string>::iterator iter;
 
@@ -219,63 +220,7 @@ Instance::save_as(const synfig::String &file_name)
 		zip_archive=zip_open(file_name.c_str(), ZIP_CREATE, &err);
 
 		//std::string path =get_file_path ();
-		for (Canvas::const_iterator iter = canvas_->begin(); iter != canvas_->end();  iter++)
-		{
-			const etl::handle<Layer> layer = *iter;
-			std::string n;
-			std::string path = canvas_->get_file_path ();
-			n = layer->get_name();
-			//synfig::info(layer->get_description().c_str());
-			if (n=="import")
-			{
-				ValueBase param = layer->get_param("filename");
-				if(param.get_type()==ValueBase::TYPE_STRING) 
-				{
-					//ValueBase ret(ValueBase::TYPE_STRING);
-					std::string param_s = param.get(String());
-					std::string abspath = path+ETL_DIRECTORY_SEPARATOR+param_s;
-					std::map<std::string,std::string>::iterator iter_images;
-					for (iter_images=images_map.begin(); iter_images!=images_map.end(); iter_images++)
-					{	
-						if ((*iter_images).second==abspath)
-						{
-							std::string in_zip="images/"+(*iter_images).first;
-							layer->set_param("filename",ValueBase(in_zip));
-						}
-					}
-					//layer->set_param("filename",  ValueBase(*iter_images));
-					//std::string s = *iter_images;
-					//synfig::info("++++++++++++++++");
-					//synfig::info(abspath.c_str());
-					//if (images_map.count(abspath)==1) synfig::info("1"); else synfig::info("0");
-					//synfig::info(((*iter_images).first).c_str());
-					//std::string filename_image;
-					//filename_image=(*iter_images).first;
-					//synfig::info("-----------------");
-					//synfig::info(filename_image.c_str());
-					//layer->set_param("filename",ValueBase(filename_image));
-					//synfig::info("___");
-					//std::list<std::string>::iterator iter2;
-					//for (iter2 = external_image_list_.begin(); iter2!=external_image_list_.end(); iter2++)
-					//{
-					//	std::string fname = *iter2;
-					//	synfig::info(fname.c_str());
-					//}
-					//synfig::info("___"); 
-				} 
-			} 
-			/* if(n=="PasteCanvas")
-			{
-				Layer_PasteCanvas* paste_canvas(static_cast<Layer_PasteCanvas*>(layer.get()));
-				Canvas::Handle paste_sub_canvas = paste_canvas->get_sub_canvas();
-				if (paste_sub_canvas->is_inline())
-					paste_sub_canvas->update_external_files_list(canvas);
-				else
-					paste_sub_canvas->update_external_files_list(paste_sub_canvas);
-				synfig::info("%d",paste_sub_canvas -> size());
-			} */ 
-		} 
-	
+		update_path_for_zip(canvas_);
 		
 		ret=save_canvas_to_zip(file_name, canvas_, zip_archive);
 		std::map<std::string, std::string>::iterator iter;
@@ -322,4 +267,66 @@ Instance::save_as(const synfig::String &file_name)
 	signal_filename_changed_();
 
 	return ret;
+}
+
+void
+Instance::update_path_for_zip(synfig::Canvas::Handle canvas)
+{
+	for (Canvas::const_iterator iter = canvas->begin(); iter != canvas->end();  iter++)
+	{
+		const etl::handle<Layer> layer = *iter;
+		std::string n;
+		std::string path = canvas->get_file_path ();
+		n = layer->get_name();
+		//synfig::info(layer->get_description().c_str());
+		if (n=="import")
+		{
+			ValueBase param = layer->get_param("filename");
+			if(param.get_type()==ValueBase::TYPE_STRING) 
+			{
+				//ValueBase ret(ValueBase::TYPE_STRING);
+				std::string param_s = param.get(String());
+				std::string abspath = path+ETL_DIRECTORY_SEPARATOR+param_s;
+				std::map<std::string,std::string>::iterator iter_images;
+				for (iter_images=images_map.begin(); iter_images!=images_map.end(); iter_images++)
+				{	
+					if ((*iter_images).second==abspath)
+					{
+						std::string in_zip="#images/"+(*iter_images).first;
+						layer->set_param("filename",ValueBase(in_zip));
+					}
+				}
+				//layer->set_param("filename",  ValueBase(*iter_images));
+				//std::string s = *iter_images;
+				//synfig::info("++++++++++++++++");
+				//synfig::info(abspath.c_str());
+				//if (images_map.count(abspath)==1) synfig::info("1"); else synfig::info("0");
+				//synfig::info(((*iter_images).first).c_str());
+				//std::string filename_image;
+				//filename_image=(*iter_images).first;
+				//synfig::info("-----------------");
+				//synfig::info(filename_image.c_str());
+				//layer->set_param("filename",ValueBase(filename_image));
+				//synfig::info("___");
+				//std::list<std::string>::iterator iter2;
+				//for (iter2 = external_image_list_.begin(); iter2!=external_image_list_.end(); iter2++)
+				//{
+				//	std::string fname = *iter2;
+				//	synfig::info(fname.c_str());
+				//}
+				//synfig::info("___"); 
+			} 
+		} 
+		if(n=="PasteCanvas")
+		{
+			synfig::Layer_PasteCanvas* paste_canvas(static_cast<synfig::Layer_PasteCanvas*>(layer.get()));
+			synfig::Canvas::Handle paste_sub_canvas = paste_canvas->get_sub_canvas();
+			if (paste_sub_canvas->is_inline())
+				update_path_for_zip(paste_sub_canvas);
+			else
+				//update_path_for_zip(paste_sub_canvas);
+				// TODO: Do nothing for now.
+				synfig::info("%d",paste_sub_canvas -> size());
+		} 
+	} 					
 }

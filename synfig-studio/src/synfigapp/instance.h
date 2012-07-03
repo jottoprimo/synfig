@@ -37,6 +37,7 @@
 #include "action_system.h"
 #include "selectionmanager.h"
 #include "cvs.h"
+#include <map>
 
 /* === M A C R O S ========================================================= */
 
@@ -84,6 +85,8 @@ private:
 	sigc::signal<void> signal_saved_;
 	etl::handle<SelectionManager> selection_manager_;
 
+	std::map <std::string, std::string> images_map;
+
 protected:
 	Instance(etl::handle<synfig::Canvas>);
 
@@ -109,6 +112,8 @@ public:
 	bool save()const;
 
 	bool save_as(const synfig::String &filename);
+
+	void update_path_for_zip(synfig::Canvas::Handle canvas);
 
 public:	// Interfaces to internal information
 	sigc::signal<void>& signal_filename_changed() { return signal_filename_changed_; }
