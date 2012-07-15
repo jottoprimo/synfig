@@ -138,6 +138,9 @@ public:
 
 	//! Parse a Cavnas form a file with absolute path.
 	Canvas::Handle parse_from_file_as(const String &filename,const String &as,String &errors);
+
+	Canvas::Handle parse_from_string_as(const String &xml_, const String &file_,const String &as_,String &errors);
+	
 	//! Parse a Canvas from a xmlpp root node
 	Canvas::Handle parse_as(xmlpp::Element* node,String &errors);
 
@@ -223,6 +226,8 @@ extern Canvas::Handle open_canvas(const String &filename,String &errors,String &
 //!	Loads a canvas from \a filename and its absolute path
 /*!	\return	The Canvas's handle on success, an empty handle on failure */
 extern Canvas::Handle open_canvas_as(const String &filename,const String &as,String &errors,String &warnings);
+
+extern Canvas::Handle open_zip_canvas_as(const String &xml, const String &filename,const String &as,String &errors,String &warnings);
 
 //! Returns the Open Canvases Map.
 //! \see open_canvas_map_

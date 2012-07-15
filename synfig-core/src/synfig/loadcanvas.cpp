@@ -179,6 +179,40 @@ synfig::open_canvas_as(const String &filename,const String &as,String &errors,St
 	return canvas;
 }
 
+Canvas::Handle
+synfig::open_zip_canvas_as(const String &xml, const String &filename,const String &as, const String file,String &errors,String &warnings)
+{
+	Canvas::Handle canvas;
+	CanvasParser parser;
+	parser.set_allow_errors(true);
+
+	try
+	{
+		CanvasParser::loading_.insert(filename);
+		canvas=parser.parse_from_string_as(xml, filename,as,errors);
+	}
+	catch (...)
+	{
+		CanvasParser::loading_.erase(filename);
+		throw;
+	}
+	CanvasParser::loading_.erase(filename);
+
+	warnings = parser.get_warnings_text();
+
+	if(parser.error_count())
+	{
+		errors = parser.get_errors_text();
+		return Canvas::Handle();
+	}
+	
+	canvas->update_external_files_list(canvas);
+	
+	//canvas->get_external_files_list();
+	return canvas;
+}
+
+
 /* === M E T H O D S ======================================================= */
 
 void
@@ -2622,6 +2656,70 @@ CanvasParser::parse_from_file_as(const String &file_,const String &as_,String &e
 		filename=as;
 		total_warnings_=0;
 		xmlpp::DomParser parser(file);
+		if(parser)
+		{
+			Canvas::Handle canvas(parse_canvas(parser.get_document()->get_root_node(),0,false,as));
+			if (!canvas) return canvas;
+			register_canvas_in_map(canvas, as);
+
+			const ValueNodeList& value_node_list(canvas->value_node_list());
+
+			again:
+			ValueNodeList::const_iterator iter;
+			for(iter=value_node_list.begin();iter!=value_node_list.end();++iter)
+			{
+				ValueNode::Handle value_node(*iter);
+				if(value_node->is_exported() && value_node->get_id().find("Unnamed")==0)
+				{
+					canvas->remove_value_node(value_node);
+					goto again;
+				}
+			}
+
+			return canvas;
+		}
+	}
+	catch(Exception::BadLinkName) { synfig::error("BadLinkName Thrown"); }
+	catch(Exception::BadType) { synfig::error("BadType Thrown"); }
+	catch(Exception::FileNotFound) { synfig::error("FileNotFound Thrown"); }
+	catch(Exception::IDNotFound) { synfig::error("IDNotFound Thrown"); }
+	catch(Exception::IDAlreadyExists) { synfig::error("IDAlreadyExists Thrown"); }
+	catch(xmlpp::internal_error x)
+	{
+		if (!strcmp(x.what(), "Couldn't create parsing context"))
+			throw runtime_error(String("  * ") + _("Can't open file") + " \"" + file + "\"");
+		throw;
+	}
+	catch(const std::exception& ex)
+	{
+		synfig::error("Standard Exception: "+String(ex.what()));
+		errors = ex.what();
+		return Canvas::Handle();
+	}
+	catch(const String& str)
+	{
+		cerr<<str<<endl;
+		//	synfig::error(str);
+		errors = str;
+		return Canvas::Handle();
+	}
+	return Canvas::Handle();
+}
+
+Canvas::Handle
+CanvasParser::parse_from_string_as(const String &xml_, const String &file_,const String &as_,String &errors)
+{
+	ChangeLocale change_locale(LC_NUMERIC, "C");
+	String file(unix_to_local_path(file_));
+	String as(unix_to_local_path(as_));
+	String xml(unix_to_local_path(xml_));
+
+	try
+	{
+		filename=as;
+		total_warnings_=0;
+		xmlpp::DomParser parser;
+		parser.parse_memory(xml);
 		if(parser)
 		{
 			Canvas::Handle canvas(parse_canvas(parser.get_document()->get_root_node(),0,false,as));

@@ -292,7 +292,7 @@ Instance::update_path_for_zip(synfig::Canvas::Handle canvas)
 				{	
 					if ((*iter_images).second==abspath)
 					{
-						std::string in_zip="#images/"+(*iter_images).first;
+						std::string in_zip="images/"+(*iter_images).first;
 						layer->set_param("filename",ValueBase(in_zip));
 					}
 				}
