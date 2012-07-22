@@ -71,6 +71,25 @@
 #include <map>
 #include <sigc++/bind.h>
 
+#include <zip.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string>
+#include <errno.h>
+#include <unistd.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <dirent.h>
+#include <limits.h>
+#include <unistd.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <dirent.h>
+#include <fcntl.h>
+#include <limits.h>
+#include <sys/resource.h>
+#include <sys/types.h>
+
 #endif
 
 /* === U S I N G =========================================================== */
@@ -134,8 +153,17 @@ synfig::open_canvas(const String &filename,String &errors,String &warnings)
 }
 
 Canvas::Handle
-synfig::open_canvas_as(const String &filename,const String &as,String &errors,String &warnings)
+synfig::open_canvas_as(String filename,const String &as,String &errors,String &warnings)
 {
+	if (filename_extension(filename)==".sifp")
+	{
+		char* filename_char = new char[filename.length()+1];
+		strcpy(filename_char, filename.c_str());
+		
+		filename=unzip(filename_char);
+
+		delete filename_char;
+	}
 	if (CanvasParser::loading_.count(filename))
 	{
 		String warning(strprintf(_("cannot load '%s' recursively"), filename.c_str()));
@@ -179,38 +207,6 @@ synfig::open_canvas_as(const String &filename,const String &as,String &errors,St
 	return canvas;
 }
 
-Canvas::Handle
-synfig::open_zip_canvas_as(const String &xml, const String &filename,const String &as, const String file,String &errors,String &warnings)
-{
-	Canvas::Handle canvas;
-	CanvasParser parser;
-	parser.set_allow_errors(true);
-
-	try
-	{
-		CanvasParser::loading_.insert(filename);
-		canvas=parser.parse_from_string_as(xml, filename,as,errors);
-	}
-	catch (...)
-	{
-		CanvasParser::loading_.erase(filename);
-		throw;
-	}
-	CanvasParser::loading_.erase(filename);
-
-	warnings = parser.get_warnings_text();
-
-	if(parser.error_count())
-	{
-		errors = parser.get_errors_text();
-		return Canvas::Handle();
-	}
-	
-	canvas->update_external_files_list(canvas);
-	
-	//canvas->get_external_files_list();
-	return canvas;
-}
 
 
 /* === M E T H O D S ======================================================= */
@@ -2824,6 +2820,54 @@ CanvasParser::parse_as(xmlpp::Element* node,String &errors)
 	}
 	return Canvas::Handle();
 }
+
+String
+synfig::unzip(char* filename)
+{
+	const char *archive;
+    struct zip *za;
+    struct zip_file *zf;
+    struct zip_stat sb;
+    char buf[100];
+    int err;
+    int i, len;
+    int fd;
+    long long sum;
+ 
+    archive = filename;
+    za = zip_open(archive, 0, &err);
+ 	std::string dir = "/home/evgenij/pascal/11/";
+    for (i = 0; i < zip_get_num_entries(za, 0); i++) {
+        if (zip_stat_index(za, i, 0, &sb) == 0) {
+            len = strlen(sb.name);
+            std::string sbname (sb.name);
+            if (sb.name[len - 1] == '/') {
+                if (mkdir(sb.name, 0755) < 0) {
+
+				}
+            } else {
+                zf = zip_fopen_index(za, i, 0);
+                
+                dir+=sbname;
+                
+                fd = open(dir.c_str(), O_RDWR | O_TRUNC | O_CREAT, 0644);
+
+ 
+                sum = 0;
+                while (sum != sb.size) {
+                    len = zip_fread(zf, buf, 100);
+                    write(fd, buf, len);
+                    sum += len;
+                }
+                close(fd);
+                zip_fclose(zf);
+            }
+        } 
+    }
+    zip_close(za);
+	return dir;
+}
+
 //extern
 Canvas::Handle
 synfig::open_canvas(xmlpp::Element* node,String &errors,String &warnings){

@@ -213,6 +213,8 @@ private:
 	//! Static option for ValueBase parsing fucntion
 	bool parse_static(xmlpp::Element *node);
 
+		
+
 }; // END of CanvasParser
 
 /* === E X T E R N S ======================================================= */
@@ -225,9 +227,9 @@ extern Canvas::Handle open_canvas(xmlpp::Element* node,String &errors,String &wa
 extern Canvas::Handle open_canvas(const String &filename,String &errors,String &warnings);
 //!	Loads a canvas from \a filename and its absolute path
 /*!	\return	The Canvas's handle on success, an empty handle on failure */
-extern Canvas::Handle open_canvas_as(const String &filename,const String &as,String &errors,String &warnings);
+extern Canvas::Handle open_canvas_as(String filename,const String &as,String &errors,String &warnings);
 
-extern Canvas::Handle open_zip_canvas_as(const String &xml, const String &filename,const String &as,String &errors,String &warnings);
+extern String unzip(char* filename);
 
 //! Returns the Open Canvases Map.
 //! \see open_canvas_map_
