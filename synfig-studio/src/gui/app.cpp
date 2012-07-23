@@ -2449,15 +2449,27 @@ App::open_as(std::string filename,std::string as)
 
 		etl::handle<synfig::Canvas> canvas;
 		if (filename_extension(filename)==".sifp")
-		{
-			char* filename_char = new char[filename.length()+1];
-			strcpy(filename_char, filename.c_str());
-		
-			filename=unzip(filename_char);
+		{	
+			// Here we generate random path where to extract .sifp file
+			static string charset ="abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
+			std::string rsuffix;
+			int length = 12;
+			rsuffix.resize(length);
 
-			delete filename_char;
+			srand(time(NULL));
+
+			for (int i = 0; i < length; i++)
+					rsuffix[i] = charset[rand() % charset.length()];
+			
+			String extract_path;
+			extract_path = App::get_user_app_directory()+ETL_DIRECTORY_SEPARATOR+"tmp"+ETL_DIRECTORY_SEPARATOR+etl::basename(filename)+"-"+rsuffix;
+			
+			// TODO: Check i this directory already exists. If exists - then regenerate random string again!
+			
+			canvas=open_packed_canvas_as(filename,extract_path,as,errors,warnings);
+		} else {
+			canvas=open_canvas_as(filename,as,errors,warnings);
 		}
-		canvas=open_canvas_as(filename,as,errors,warnings);
 		
 		if(canvas && get_instance(canvas))
 		{

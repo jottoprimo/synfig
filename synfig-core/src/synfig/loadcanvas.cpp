@@ -90,18 +90,6 @@
 #include <sys/resource.h>
 #include <sys/types.h>
 
-#include <glibmm.h>
-
-#endif
-
-#ifndef SYNFIG_USER_APP_DIR
-#ifdef __APPLE__
-#define SYNFIG_USER_APP_DIR	"Library/Synfig"
-#elif defined(_WIN32)
-#define SYNFIG_USER_APP_DIR	"Synfig"
-#else
-#define SYNFIG_USER_APP_DIR	".synfig"
-#endif
 #endif
 
 /* === U S I N G =========================================================== */
@@ -162,6 +150,69 @@ Canvas::Handle
 synfig::open_canvas(const String &filename,String &errors,String &warnings)
 {
 	return open_canvas_as(filename, filename, errors, warnings);
+}
+
+Canvas::Handle
+synfig::open_packed_canvas_as(const String &filename, const String &extract_to, const String &as,String &errors,String &warnings)
+{
+    struct zip *za;
+    struct zip_file *zf;
+    struct zip_stat sb;
+    char buf[100];
+    int err;
+    int i, len;
+    int fd;
+    long long sum;
+	
+	synfig::info(filename.c_str());
+	
+    za = zip_open(filename.c_str(), 0, &err);
+	mkdir(extract_to.c_str(), 0755); 
+    for (i = 0; i < zip_get_num_files(za); i++) {
+		//synfig::info("%d",i);
+        if (zip_stat_index(za, i, 0, &sb) == 0) {
+			std::string archive_dirpath;
+			archive_dirpath = etl::dirname(sb.name);
+			std::string dir;
+			if (archive_dirpath==".")
+				archive_dirpath="";
+			dir = extract_to+archive_dirpath;
+			
+            mkdir(dir.c_str(), 0755);
+
+			synfig::info(dir.c_str());
+            
+            zf = zip_fopen_index(za, i, 0);
+			/* if (sb.name[0]=='/')
+			{
+				dir = filename_str;
+			}
+			else
+			{
+				dir = filename_str+ETL_DIRECTORY_SEPARATOR;
+			}*/
+			if (dir[dir.length()-1]!=ETL_DIRECTORY_SEPARATOR)
+				dir += ETL_DIRECTORY_SEPARATOR;
+            
+            dir+=etl::basename(sb.name);                
+            fd = open(dir.c_str(), O_RDWR | O_TRUNC | O_CREAT, 0644);
+
+
+            sum = 0;
+            while (sum != sb.size) {
+                len = zip_fread(zf, buf, 100);
+                write(fd, buf, len);
+                sum += len;
+            }
+            close(fd);
+            zip_fclose(zf);
+        } 
+    }
+    zip_close(za);
+    
+    String new_filename = extract_to+ETL_DIRECTORY_SEPARATOR+"main.sif";
+	return open_canvas_as(new_filename, as, errors, warnings);
+	
 }
 
 Canvas::Handle
@@ -2822,105 +2873,6 @@ CanvasParser::parse_as(xmlpp::Element* node,String &errors)
 		return Canvas::Handle();
 	}
 	return Canvas::Handle();
-}
-
-String
-synfig::unzip(char* filename)
-{
-	const char *archive;
-    struct zip *za;
-    struct zip_file *zf;
-    struct zip_stat sb;
-    char buf[100];
-    int err;
-    int i, len;
-    int fd;
-    long long sum;
-
-	static string charset ="abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
-    std::string rsuffix;
-    int length = 12;
-    rsuffix.resize(length);
-
-    srand(time(NULL));
-
-    for (int i = 0; i < length; i++)
-            rsuffix[i] = charset[rand() % charset.length()];
-	
-	String filename_str(filename);
-	filename_str = get_user_app_directory()+ETL_DIRECTORY_SEPARATOR+"tmp"+ETL_DIRECTORY_SEPARATOR+etl::basename(filename_str)+"-"+rsuffix;
-    archive = filename;
-	
-	synfig::info(filename_str.c_str());
-	
-    za = zip_open(archive, 0, &err);
- 	std::string dir = get_user_app_directory()+filename_str+"-"+rsuffix;
-	mkdir(filename_str.c_str(), 0755); 
-    for (i = 0; i < zip_get_num_files(za); i++) {
-		//synfig::info("%d",i);
-        if (zip_stat_index(za, i, 0, &sb) == 0) {
-            len = strlen(sb.name);
-            //std::string sbname (sb.name);
-            
-			std::string sbname(sb.name);
-			dir = filename_str+etl::dirname(sbname);
-			if (etl::dirname(sbname)==".") dir = filename_str; 
-
-			char* dir_char = new char[dir.length()+1];
-			strcpy(dir_char, dir.c_str());
-			
-            mkdir(dir_char, 0755);
-
-			synfig::info(dir_char);
-			
-			delete dir_char;
-            
-            zf = zip_fopen_index(za, i, 0);
-			/* if (sb.name[0]=='/')
-			{
-				dir = filename_str;
-			}
-			else
-			{
-				dir = filename_str+ETL_DIRECTORY_SEPARATOR;
-			}*/
-			if (dir[dir.length()-1]!=ETL_DIRECTORY_SEPARATOR)
-				dir += ETL_DIRECTORY_SEPARATOR;
-            
-            dir+=etl::basename(sbname);                
-            fd = open(dir.c_str(), O_RDWR | O_TRUNC | O_CREAT, 0644);
-
-
-            sum = 0;
-            while (sum != sb.size) {
-                len = zip_fread(zf, buf, 100);
-                write(fd, buf, len);
-                sum += len;
-            }
-            close(fd);
-            zip_fclose(zf);
-        } 
-    }
-    zip_close(za);
-	filename_str=filename_str+ETL_DIRECTORY_SEPARATOR+"main.sif";
-	return filename_str;
-}
-
-String
-synfig::get_user_app_directory()
-{
-	/*std::string usr_dir(SYNFIG_USER_APP_DIR);
-	synfig::info(SYNFIG_USER_APP_DIR)
-#ifdef WIN32
-        return getenv("HOMEDRIVE")+ETL_DIRECTORY_SEPARATOR+getenv("HOMEPATH")+ETL_DIRECTORY_SEPARATOR+usr_dir;
-#else
-        return getenv("HOME")+ETL_DIRECTORY_SEPARATOR+usr_dir;
-#endif*/
-#ifdef WIN32
-	return Glib::locale_from_utf8(Glib::build_filename(Glib::get_home_dir(),SYNFIG_USER_APP_DIR));
-#else
-	return Glib::build_filename(Glib::get_home_dir(),SYNFIG_USER_APP_DIR);
-#endif
 }
 
 //extern
