@@ -90,6 +90,18 @@
 #include <sys/resource.h>
 #include <sys/types.h>
 
+#include <glibmm.h>
+
+#endif
+
+#ifndef SYNFIG_USER_APP_DIR
+#ifdef __APPLE__
+#define SYNFIG_USER_APP_DIR	"Library/Synfig"
+#elif defined(_WIN32)
+#define SYNFIG_USER_APP_DIR	"Synfig"
+#else
+#define SYNFIG_USER_APP_DIR	".synfig"
+#endif
 #endif
 
 /* === U S I N G =========================================================== */
@@ -153,17 +165,8 @@ synfig::open_canvas(const String &filename,String &errors,String &warnings)
 }
 
 Canvas::Handle
-synfig::open_canvas_as(String filename,const String &as,String &errors,String &warnings)
+synfig::open_canvas_as(const String &filename,const String &as,String &errors,String &warnings)
 {
-	if (filename_extension(filename)==".sifp")
-	{
-		char* filename_char = new char[filename.length()+1];
-		strcpy(filename_char, filename.c_str());
-		
-		filename=unzip(filename_char);
-
-		delete filename_char;
-	}
 	if (CanvasParser::loading_.count(filename))
 	{
 		String warning(strprintf(_("cannot load '%s' recursively"), filename.c_str()));
@@ -2833,39 +2836,91 @@ synfig::unzip(char* filename)
     int i, len;
     int fd;
     long long sum;
- 
+
+	static string charset ="abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
+    std::string rsuffix;
+    int length = 12;
+    rsuffix.resize(length);
+
+    srand(time(NULL));
+
+    for (int i = 0; i < length; i++)
+            rsuffix[i] = charset[rand() % charset.length()];
+	
+	String filename_str(filename);
+	filename_str = get_user_app_directory()+ETL_DIRECTORY_SEPARATOR+"tmp"+ETL_DIRECTORY_SEPARATOR+etl::basename(filename_str)+"-"+rsuffix;
     archive = filename;
+	
+	synfig::info(filename_str.c_str());
+	
     za = zip_open(archive, 0, &err);
- 	std::string dir = "/home/evgenij/pascal/11/";
-    for (i = 0; i < zip_get_num_entries(za, 0); i++) {
+ 	std::string dir = get_user_app_directory()+filename_str+"-"+rsuffix;
+	mkdir(filename_str.c_str(), 0755); 
+    for (i = 0; i < zip_get_num_files(za); i++) {
+		//synfig::info("%d",i);
         if (zip_stat_index(za, i, 0, &sb) == 0) {
             len = strlen(sb.name);
-            std::string sbname (sb.name);
-            if (sb.name[len - 1] == '/') {
-                if (mkdir(sb.name, 0755) < 0) {
+            //std::string sbname (sb.name);
+            
+			std::string sbname(sb.name);
+			dir = filename_str+etl::dirname(sbname);
+			if (etl::dirname(sbname)==".") dir = filename_str; 
 
-				}
-            } else {
-                zf = zip_fopen_index(za, i, 0);
-                
-                dir+=sbname;
-                
-                fd = open(dir.c_str(), O_RDWR | O_TRUNC | O_CREAT, 0644);
+			char* dir_char = new char[dir.length()+1];
+			strcpy(dir_char, dir.c_str());
+			
+            mkdir(dir_char, 0755);
 
- 
-                sum = 0;
-                while (sum != sb.size) {
-                    len = zip_fread(zf, buf, 100);
-                    write(fd, buf, len);
-                    sum += len;
-                }
-                close(fd);
-                zip_fclose(zf);
+			synfig::info(dir_char);
+			
+			delete dir_char;
+            
+            zf = zip_fopen_index(za, i, 0);
+			/* if (sb.name[0]=='/')
+			{
+				dir = filename_str;
+			}
+			else
+			{
+				dir = filename_str+ETL_DIRECTORY_SEPARATOR;
+			}*/
+			if (dir[dir.length()-1]!=ETL_DIRECTORY_SEPARATOR)
+				dir += ETL_DIRECTORY_SEPARATOR;
+            
+            dir+=etl::basename(sbname);                
+            fd = open(dir.c_str(), O_RDWR | O_TRUNC | O_CREAT, 0644);
+
+
+            sum = 0;
+            while (sum != sb.size) {
+                len = zip_fread(zf, buf, 100);
+                write(fd, buf, len);
+                sum += len;
             }
+            close(fd);
+            zip_fclose(zf);
         } 
     }
     zip_close(za);
-	return dir;
+	filename_str=filename_str+ETL_DIRECTORY_SEPARATOR+"main.sif";
+	return filename_str;
+}
+
+String
+synfig::get_user_app_directory()
+{
+	/*std::string usr_dir(SYNFIG_USER_APP_DIR);
+	synfig::info(SYNFIG_USER_APP_DIR)
+#ifdef WIN32
+        return getenv("HOMEDRIVE")+ETL_DIRECTORY_SEPARATOR+getenv("HOMEPATH")+ETL_DIRECTORY_SEPARATOR+usr_dir;
+#else
+        return getenv("HOME")+ETL_DIRECTORY_SEPARATOR+usr_dir;
+#endif*/
+#ifdef WIN32
+	return Glib::locale_from_utf8(Glib::build_filename(Glib::get_home_dir(),SYNFIG_USER_APP_DIR));
+#else
+	return Glib::build_filename(Glib::get_home_dir(),SYNFIG_USER_APP_DIR);
+#endif
 }
 
 //extern

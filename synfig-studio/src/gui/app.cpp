@@ -2448,35 +2448,16 @@ App::open_as(std::string filename,std::string as)
 
 
 		etl::handle<synfig::Canvas> canvas;
-		if (filename_extension(filename)!=".sifp")
+		if (filename_extension(filename)==".sifp")
 		{
-			canvas=open_canvas_as(filename,as,errors,warnings);
-		}
-		else
-		{
-			
-			struct zip *zip_archive;
-			int err;
-			zip_archive=zip_open(filename.c_str(), 0, &err);
-			std::string file;
-			int r;
-			char buffer [10000];
-			
-			struct zip_file *sif_in_zip(zip_fopen(zip_archive, etl::basename(filename).c_str(), 0));
+			char* filename_char = new char[filename.length()+1];
+			strcpy(filename_char, filename.c_str());
+		
+			filename=unzip(filename_char);
 
-			if (sif_in_zip) {
-				while ( (r = zip_fread(sif_in_zip, buffer, sizeof(buffer))) > 0) 
-				{
-					std::string buffer_str(buffer);
-					file += buffer_str;
-					//synfig::info("%s",buffer);
-				};
-				synfig::info(file.c_str());
-				zip_fclose(sif_in_zip);
-			}
-			
-			canvas=open_zip_canvas_as(file,filename,as,errors,warnings);
+			delete filename_char;
 		}
+		canvas=open_canvas_as(filename,as,errors,warnings);
 		
 		if(canvas && get_instance(canvas))
 		{

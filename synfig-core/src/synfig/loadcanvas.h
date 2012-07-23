@@ -227,9 +227,10 @@ extern Canvas::Handle open_canvas(xmlpp::Element* node,String &errors,String &wa
 extern Canvas::Handle open_canvas(const String &filename,String &errors,String &warnings);
 //!	Loads a canvas from \a filename and its absolute path
 /*!	\return	The Canvas's handle on success, an empty handle on failure */
-extern Canvas::Handle open_canvas_as(String filename,const String &as,String &errors,String &warnings);
+extern Canvas::Handle open_canvas_as(const String &filename,const String &as,String &errors,String &warnings);
 
 extern String unzip(char* filename);
+extern String get_user_app_directory();
 
 //! Returns the Open Canvases Map.
 //! \see open_canvas_map_

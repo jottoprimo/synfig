@@ -978,7 +978,7 @@ synfig::save_canvas_to_zip(const String &filename, Canvas::ConstHandle canvas , 
 		strcpy(f_char, f.c_str());
 		
 		zip_src=zip_source_buffer(zip_archive, f_char, strlen(f_char), 0);
-		zip_add(zip_archive, basename(filename_char), zip_src);
+		zip_add(zip_archive, "main.sif", zip_src);
 			
 			
 	}
