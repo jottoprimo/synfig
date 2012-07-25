@@ -243,7 +243,7 @@ Instance::save_as(const synfig::String &file_name)
 			//char* external_char = new char[external.length()+1];
 			//strcpy(external_char, external.c_str());
 
-			std::string in_zip_path = "/images/"+(*iter).first;
+			std::string in_zip_path = "#"+(*iter).first;
 			
 			zip_add(zip_archive, in_zip_path.c_str(), zs);
 			

@@ -239,11 +239,11 @@ private:
 	Real grow_value;
 	
 	
-	std::list <std::string> external_image_list_;
+	std::map <std::string, bool> external_image_map_;
 	
 public:
 
-	std::list <std::string> all_externals;
+	std::map <std::string, bool> all_externals;
 
 
 	/*

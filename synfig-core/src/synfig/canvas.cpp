@@ -1442,12 +1442,12 @@ Canvas::update_external_files_list(Canvas::Handle canvas)
 				std::string param_s = param.get(String());
 				canvas->external_files_list_add(path,param_s);
 				//synfig::info("___");
-				std::list<std::string>::iterator iter2;
-				for (iter2 = external_image_list_.begin(); iter2!=external_image_list_.end(); iter2++)
+				//std::map<std::string, bool>::iterator iter2;
+				/* for (iter2 = external_image_map_.begin(); iter2!=external_image_map_.end(); iter2++)
 				{
-					std::string fname = *iter2;
+					std::string fname = (*iter2).first;
 				//	synfig::info(fname.c_str());
-				}
+				} */
 				//synfig::info("___");
 			}
 		}
@@ -1475,21 +1475,22 @@ Canvas::update_external_files_list(Canvas::Handle canvas)
 void
 Canvas::external_files_list_add(std::string path, std::string param)
 {
-	external_image_list_.remove(path+ETL_DIRECTORY_SEPARATOR+param);
-	external_image_list_.push_back(path+ETL_DIRECTORY_SEPARATOR+param);
+	//external_image_map_.erase(path+ETL_DIRECTORY_SEPARATOR+param);
+	external_image_map_[path+ETL_DIRECTORY_SEPARATOR+param]=false;
 }
 
 void
 Canvas::get_external_files_list()
 {
-	std::list<std::string>::iterator iter1;
-	std::list<std::string>::iterator iter2;
-	for (iter1 = external_image_list_.begin(); iter1 != external_image_list_.end(); iter1++)
+	std::map<std::string, bool>::iterator iter1;
+	std::map<std::string, bool>::iterator iter2;
+	for (iter1 = external_image_map_.begin(); iter1 != external_image_map_.end(); iter1++)
 	{
-		std::string external = *iter1;
-		all_externals.remove(external);
-		all_externals.push_back(external);
+		std::string external = (*iter1).first;
+		//all_externals.erase(external);
+		all_externals[external]=(*iter1).second;
 	}
+	
 	std::map<String, Handle>::iterator iter;
 	for (iter = externals_.begin(); iter != externals_.end(); iter++)
 	{
@@ -1498,20 +1499,20 @@ Canvas::get_external_files_list()
 		/* synfig::info("***");
 		std::string desc = second->get_description ();
 		synfig::info(desc.c_str()); */
-		for (iter2 = second->external_image_list_.begin(); iter2!=second->external_image_list_.end(); iter2++)
+		for (iter2 = second->external_image_map_.begin(); iter2!=second->external_image_map_.end(); iter2++)
 		{
-			std::string external = *iter2;
-			all_externals.remove(external);
-			all_externals.push_back(external);
+			std::string external = (*iter2).first;
+			//all_externals.remove(external);
+			all_externals[external]=(*iter).second;
 		}
 	}
-	synfig::info("***");
-	for (iter1 = all_externals.begin(); iter1 != all_externals.end(); iter1++)
-	{
-		std::string external = *iter1;
-		synfig::info(external.c_str());
-	}
-	synfig::info("***");	
+	//synfig::info("***");
+	//for (iter1 = all_externals.begin(); iter1 != all_externals.end(); iter1++)
+	//{
+	//	std::string external = *iter1;
+	//	synfig::info(external.c_str());
+	//}
+	//synfig::info("***");	
 	//return all_externals;
 }
 
