@@ -54,6 +54,11 @@
 #include <string>
 #include <string.h>
 
+#include <fstream>
+#include <sys/types.h>
+#include <sys/stat.h>
+
+
 
 #include "general.h"
 
@@ -166,6 +171,7 @@ Instance::save()const
 	bool ret=save_canvas(get_file_name(),canvas_);
 	if(ret)
 	{
+		// if .sifp then pack all files to zip
 		reset_action_count();
 		const_cast<sigc::signal<void>& >(signal_saved_)();
 	}
@@ -188,52 +194,103 @@ Instance::save_as(const synfig::String &file_name)
 	//canvas_->get_external_files_list();
 
 	//map <std::string, std::string> images_map;
-
-	std::map <std::string, bool>::iterator iter;
-	std::map <std::string, bool> externals_list = canvas_->get_external_files_list();
-
-	for (iter = externals_list.begin(); iter != externals_list.end(); iter++)
-	{
-		std::string image_path;
-		if ((*iter).second)
-		{ 
-			image_path = (*iter).first;
-
-			char* image_path_char = new char[image_path.length()+1];
-			strcpy(image_path_char, image_path.c_str());
-		
-			std::string image_name_char = basename(image_path_char);
-			std::string image_name(image_name_char);
-			std::string image_extension = filename_extension(image_name);
-			image_name = filename_sans_extension(image_name);
-			std::string image_name_n = image_name+image_extension;
-			int count = 1;
-			while (images_map.count(image_name_n)==1)
-			{
-				std::string s(strprintf("%d",count));
-				image_name_n = image_name+"_"+s+image_extension;
-			}
-			//synfig::info(image_path.c_str());
-			images_map[image_name_n]=image_path;
-		}
-	}
 	if (filename_extension(file_name) == ".sifp")
 	{
-		struct zip *zip_archive;
-		int err;
-		zip_archive=zip_open(file_name.c_str(), ZIP_CREATE, &err);
+		
+		std::map <std::string, bool>::iterator iter;
+		std::map <std::string, bool> externals_list = canvas_->get_external_files_list();
+
+		for (iter = externals_list.begin(); iter != externals_list.end(); iter++)
+		{
+			std::string image_path;
+			if ((*iter).second)
+			{ 
+				image_path = (*iter).first;
+
+				char* image_path_char = new char[image_path.length()+1];
+				strcpy(image_path_char, image_path.c_str());
+			
+				std::string image_name_char = basename(image_path_char);
+				std::string image_name(image_name_char);
+				std::string image_extension = filename_extension(image_name);
+				image_name = filename_sans_extension(image_name);
+				std::string image_name_n = image_name+image_extension;
+				int count = 1;
+				while (images_map.count(image_name_n)==1)
+				{
+					std::string s(strprintf("%d",count));
+					image_name_n = image_name+"_"+s+image_extension;
+				}
+				//synfig::info(image_path.c_str());
+				images_map[image_name_n]=image_path;
+			}
+		}
+	
+		
 
 		//std::string path =get_file_path ();
 		update_path_for_zip(canvas_);
 		
-		ret=save_canvas_to_zip(file_name, canvas_, zip_archive);
-		std::map<std::string, std::string>::iterator iter;
-		for (iter=images_map.begin(); iter!=images_map.end(); iter++)
+		static string charset ="abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
+		std::string rsuffix;
+		int length = 12;
+		rsuffix.resize(length);
+
+		srand(time(NULL));
+
+		for (int i = 0; i < length; i++)
+				rsuffix[i] = charset[rand() % charset.length()];
+
+		
+		String tmp_dir;
+		#ifdef WIN32
+        	tmp_dir = String(getenv("HOMEDRIVE"))+ETL_DIRECTORY_SEPARATOR+getenv("HOMEPATH")+ETL_DIRECTORY_SEPARATOR+SYNFIG_USER_APP_DIR;
+		#else
+        	tmp_dir = String(getenv("HOME"))+ETL_DIRECTORY_SEPARATOR+SYNFIG_USER_APP_DIR;
+		#endif
+		tmp_dir = tmp_dir+ETL_DIRECTORY_SEPARATOR+"tmp"+ETL_DIRECTORY_SEPARATOR;
+		char* file_name_char = new char[file_name.length()+1];
+		strcpy(file_name_char, file_name.c_str());
+		tmp_dir = tmp_dir+basename(file_name_char)+String("-"+rsuffix);
+		synfig::info("tmp_dir: "+tmp_dir);
+		
+		// copy files to temp dir
+		std::map <std::string, std::string>::iterator iter2;
+
+		mkdir((tmp_dir).c_str(), 0755);
+		mkdir((tmp_dir + ETL_DIRECTORY_SEPARATOR+"images").c_str(),  0755);
+		
+		for (iter2=images_map.begin(); iter2!=images_map.end(); iter2++)
 		{
-			synfig::info(((*iter).first).c_str());
-			synfig::info("|||||||||||||");
-			synfig::info(((*iter).second).c_str());
-			std::string image_name = (*iter).second;
+			std::string image_name = (*iter2).second;
+			
+			std::ifstream  src(image_name.c_str());
+			std::ofstream  dst((tmp_dir + ETL_DIRECTORY_SEPARATOR+"images"+ETL_DIRECTORY_SEPARATOR+(*iter2).first).c_str());
+
+			dst << src.rdbuf();
+		} 
+
+		
+		// save as sif to temp dir
+
+		
+		ret=save_canvas(tmp_dir+ETL_DIRECTORY_SEPARATOR+"main.sif",canvas_);
+		
+		// pack everything to zip
+		//save_sifp();
+		
+		/* struct zip *zip_archive;
+		int err;
+		zip_archive=zip_open(file_name.c_str(), ZIP_CREATE, &err);
+		
+		//ret=save_canvas_to_zip(file_name, canvas_, zip_archive); -- remove from core!!!
+		 //std::map<std::string, std::string>::iterator iter;
+		for (iter2=images_map.begin(); iter2!=images_map.end(); iter2++)
+		{
+		//	synfig::info(((*iter).first).c_str());
+		//	synfig::info("|||||||||||||");
+		//	synfig::info(((*iter).second).c_str());
+			std::string image_name = (*iter2).second;
 			struct zip_source *zs;
 
 			//std::string abspath (dir);
@@ -247,7 +304,7 @@ Instance::save_as(const synfig::String &file_name)
 			//char* external_char = new char[external.length()+1];
 			//strcpy(external_char, external.c_str());
 
-			std::string in_zip_path = "/images/"+(*iter).first;
+			std::string in_zip_path = "/images/"+(*iter2).first;
 			
 			zip_add(zip_archive, in_zip_path.c_str(), zs);
 			
@@ -255,7 +312,7 @@ Instance::save_as(const synfig::String &file_name)
 			
 			//delete external_char;
 		}
-		zip_close(zip_archive);
+		zip_close(zip_archive);*/
 	} 
 	else
 		ret=save_canvas(file_name,canvas_);
