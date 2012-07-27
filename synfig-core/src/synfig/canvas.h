@@ -241,9 +241,9 @@ private:
 	
 	std::map <std::string, bool> external_image_map_;
 	
-public:
+//public:
 
-	std::map <std::string, bool> all_externals;
+	//std::map <std::string, bool> all_externals;
 
 
 	/*
@@ -615,9 +615,9 @@ public:
 	
 	void update_external_files_list(Canvas::Handle canvas);
 	
-	void external_files_list_add(std::string path, std::string param);
+	void external_files_list_add(std::string path, std::string param, bool flag);
 	
-	void get_external_files_list();
+	std::map <std::string, bool> get_external_files_list();
 
 #ifdef _DEBUG
 	void show_externals(String file, int line, String text) const;

@@ -185,33 +185,37 @@ Instance::save_as(const synfig::String &file_name)
 	{
 		canvas_->get_external_files_list();
 	} */
-	canvas_->get_external_files_list();
+	//canvas_->get_external_files_list();
 
 	//map <std::string, std::string> images_map;
 
-	std::list<std::string>::iterator iter;
+	std::map <std::string, bool>::iterator iter;
+	std::map <std::string, bool> externals_list = canvas_->get_external_files_list();
 
-	for (iter = canvas_->all_externals.begin(); iter != canvas_->all_externals.end(); iter++)
+	for (iter = externals_list.begin(); iter != externals_list.end(); iter++)
 	{
 		std::string image_path;
-		image_path = *iter;
+		if ((*iter).second)
+		{ 
+			image_path = (*iter).first;
 
-		char* image_path_char = new char[image_path.length()+1];
-		strcpy(image_path_char, image_path.c_str());
+			char* image_path_char = new char[image_path.length()+1];
+			strcpy(image_path_char, image_path.c_str());
 		
-		std::string image_name_char = basename(image_path_char);
-		std::string image_name(image_name_char);
-		std::string image_extension = filename_extension(image_name);
-		image_name = filename_sans_extension(image_name);
-		std::string image_name_n = image_name+image_extension;
-		int count = 1;
-		while (images_map.count(image_name_n)==1)
-		{
-			std::string s(strprintf("%d",count));
-			image_name_n = image_name+"_"+s+image_extension;
+			std::string image_name_char = basename(image_path_char);
+			std::string image_name(image_name_char);
+			std::string image_extension = filename_extension(image_name);
+			image_name = filename_sans_extension(image_name);
+			std::string image_name_n = image_name+image_extension;
+			int count = 1;
+			while (images_map.count(image_name_n)==1)
+			{
+				std::string s(strprintf("%d",count));
+				image_name_n = image_name+"_"+s+image_extension;
+			}
+			//synfig::info(image_path.c_str());
+			images_map[image_name_n]=image_path;
 		}
-		//synfig::info(image_path.c_str());
-		images_map[image_name_n]=image_path;
 	}
 	if (filename_extension(file_name) == ".sifp")
 	{
@@ -243,7 +247,7 @@ Instance::save_as(const synfig::String &file_name)
 			//char* external_char = new char[external.length()+1];
 			//strcpy(external_char, external.c_str());
 
-			std::string in_zip_path = "#"+(*iter).first;
+			std::string in_zip_path = "/images/"+(*iter).first;
 			
 			zip_add(zip_archive, in_zip_path.c_str(), zs);
 			
@@ -292,7 +296,7 @@ Instance::update_path_for_zip(synfig::Canvas::Handle canvas)
 				{	
 					if ((*iter_images).second==abspath)
 					{
-						std::string in_zip="images/"+(*iter_images).first;
+						std::string in_zip="#"+(*iter_images).first;
 						layer->set_param("filename",ValueBase(in_zip));
 					}
 				}
