@@ -613,7 +613,7 @@ public:
 	Real get_grow_value()const;
 	void set_grow_value(Real x);
 	
-	void update_external_files_list(Canvas::Handle canvas);
+	void update_external_files_list(Canvas::Handle canvas, bool flag);
 	
 	void external_files_list_add(std::string path, std::string param, bool flag);
 	

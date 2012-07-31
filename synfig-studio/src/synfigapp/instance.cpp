@@ -271,10 +271,14 @@ Instance::save_as(const synfig::String &file_name)
 		} 
 
 		
+		
 		// save as sif to temp dir
 
 		
 		ret=save_canvas(tmp_dir+ETL_DIRECTORY_SEPARATOR+"main.sif",canvas_);
+
+		canvas_->update_external_files_list(canvas_, false);
+
 		
 		// pack everything to zip
 		//save_sifp();
