@@ -115,6 +115,8 @@ public:
 
 	void update_path_for_zip(synfig::Canvas::Handle canvas);
 
+	void save_sifp(std::string file_name, std::map <std::string, std::string> images_map, std::string path);
+
 public:	// Interfaces to internal information
 	sigc::signal<void>& signal_filename_changed() { return signal_filename_changed_; }
 	sigc::signal<void>& signal_saved() { return signal_saved_; }

@@ -1425,9 +1425,9 @@ Canvas::register_external_canvas(String file_name, Handle canvas)
 }
 
 void 
-Canvas::update_external_files_list(Canvas::Handle canvas)
+Canvas::update_external_files_list(Canvas::Handle canvas, bool flag)
 {
-	bool flag = (filename_extension(get_file_name()) != ".sifp");
+	//bool flag = (filename_extension(get_file_name()) != ".sifp");
 	synfig::info(filename_extension(get_file_name()));
 	std::string path =get_file_path ();
 	for (Canvas::const_iterator iter = begin(); iter != end();  iter++)
@@ -1458,9 +1458,9 @@ Canvas::update_external_files_list(Canvas::Handle canvas)
 			Layer_PasteCanvas* paste_canvas(static_cast<Layer_PasteCanvas*>(layer.get()));
 			Canvas::Handle paste_sub_canvas = paste_canvas->get_sub_canvas();
 			if (paste_sub_canvas->is_inline())
-				paste_sub_canvas->update_external_files_list(canvas);
+				paste_sub_canvas->update_external_files_list(canvas, flag);
 			else
-				paste_sub_canvas->update_external_files_list(paste_sub_canvas);
+				paste_sub_canvas->update_external_files_list(paste_sub_canvas, flag);
 			synfig::info("%d",paste_sub_canvas -> size());
 		}
 	}
