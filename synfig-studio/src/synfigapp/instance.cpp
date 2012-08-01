@@ -277,11 +277,15 @@ Instance::save_as(const synfig::String &file_name)
 		
 		ret=save_canvas(tmp_dir+ETL_DIRECTORY_SEPARATOR+"main.sif",canvas_);
 
-		canvas_->update_external_files_list(canvas_, false);
+		update_externals_list(externals_list, images_map);
 
+		for (iter = externals_list.begin(); iter != externals_list.end(); iter++)
+		{
+			synfig::info("after: "+(*iter).first);
+		}
 		
 		// pack everything to zip
-		save_sifp(file_name, images_map, tmp_dir+ETL_DIRECTORY_SEPARATOR);
+		save_sifp(file_name, externals_list, tmp_dir+ETL_DIRECTORY_SEPARATOR);
 		
 		
 	} 
@@ -302,42 +306,55 @@ Instance::save_as(const synfig::String &file_name)
 }
 
 void
-Instance::save_sifp(std::string file_name, std::map <std::string, std::string> images_map, std::string path)
+Instance::update_externals_list (std::map<std::string, bool> &externals_list, std::map<std::string, std::string> images_map)
+{
+	std::map<std::string, std::string>::iterator iter;  
+	for (iter = images_map.begin(); iter != images_map.end();  iter++)
+	{
+		externals_list.erase((*iter).second);
+		externals_list[(*iter).first] = true;
+	}
+	//return externals_list;
+}
+
+
+void
+Instance::save_sifp(std::string file_name, std::map <std::string, bool> externals_list, std::string path)
 {
 	struct zip *zip_archive;
 	int err;
 	zip_archive=zip_open(file_name.c_str(), ZIP_CREATE, &err);
 	
 	//ret=save_canvas_to_zip(file_name, canvas_, zip_archive); -- remove from core!!!
-	std::map<std::string, std::string>::iterator iter;
-	for (iter=images_map.begin(); iter!=images_map.end(); iter++)
+	std::map<std::string, bool>::iterator iter;
+	for (iter=externals_list.begin(); iter!=externals_list.end(); iter++)
 	{
 	//	synfig::info(((*iter).first).c_str());
 	//	synfig::info("|||||||||||||");
 	//	synfig::info(((*iter).second).c_str());
-		std::string image_name = path+"images"+ETL_DIRECTORY_SEPARATOR+(*iter).first;
-		struct zip_source *zs;
+		if ((*iter).second)
+		{
+			std::string image_name = path+"images"+ETL_DIRECTORY_SEPARATOR+(*iter).first;
+			struct zip_source *zs;
 
-		//std::string abspath (dir);
-		//abspath = abspath+"/"+external;
+			//std::string abspath (dir);
+			//abspath = abspath+"/"+external;
 		
-		zs=zip_source_file(zip_archive,image_name.c_str(), 0, -1);
+			zs=zip_source_file(zip_archive,image_name.c_str(), 0, -1);
 		
-		//synfig::info("abspath");
-		//synfig::info(image_name.c_str());
+			//synfig::info("abspath");
+			//synfig::info(image_name.c_str());
 		
-		//char* external_char = new char[external.length()+1];
-		//strcpy(external_char, external.c_str());
+			//char* external_char = new char[external.length()+1];
+			//strcpy(external_char, external.c_str());
 
-		std::string img_dir ("images") ;
-		std::string in_zip_path = img_dir+ETL_DIRECTORY_SEPARATOR+(*iter).first;
-	//	in_zip_path = +in_zip_path;
+			std::string img_dir ("images") ;
+			std::string in_zip_path = img_dir+ETL_DIRECTORY_SEPARATOR+(*iter).first;
+		//	in_zip_path = +in_zip_path;
 		
-		zip_add(zip_archive, in_zip_path.c_str(), zs);
+			zip_add(zip_archive, in_zip_path.c_str(), zs);
+		}
 		
-		//synfig::info(external.c_str());
-		
-		//delete external_char;
 	}
 
 	struct zip_source *zs;

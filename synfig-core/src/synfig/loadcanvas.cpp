@@ -249,8 +249,7 @@ synfig::open_canvas_as(const String &filename,const String &as,String &errors,St
 		errors = parser.get_errors_text();
 		return Canvas::Handle();
 	}
-	bool flag = (filename_extension(filename) != ".sifp");
-	canvas->update_external_files_list(canvas, flag);
+	canvas->update_external_files_list(canvas);
 	
 	//canvas->get_external_files_list();
 	return canvas;

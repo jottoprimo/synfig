@@ -1425,9 +1425,9 @@ Canvas::register_external_canvas(String file_name, Handle canvas)
 }
 
 void 
-Canvas::update_external_files_list(Canvas::Handle canvas, bool flag)
+Canvas::update_external_files_list(Canvas::Handle canvas)
 {
-	//bool flag = (filename_extension(get_file_name()) != ".sifp");
+	
 	synfig::info(filename_extension(get_file_name()));
 	std::string path =get_file_path ();
 	for (Canvas::const_iterator iter = begin(); iter != end();  iter++)
@@ -1442,6 +1442,7 @@ Canvas::update_external_files_list(Canvas::Handle canvas, bool flag)
 			if(param.get_type()==ValueBase::TYPE_STRING) 
 			{
 				std::string param_s = param.get(String());
+				bool flag = ((filename_extension(get_file_name()) != ".sifp") || (param_s[0]!='#'));
 				canvas->external_files_list_add(path,param_s, flag);
 				//synfig::info("___");
 				//std::map<std::string, bool>::iterator iter2;
@@ -1458,11 +1459,41 @@ Canvas::update_external_files_list(Canvas::Handle canvas, bool flag)
 			Layer_PasteCanvas* paste_canvas(static_cast<Layer_PasteCanvas*>(layer.get()));
 			Canvas::Handle paste_sub_canvas = paste_canvas->get_sub_canvas();
 			if (paste_sub_canvas->is_inline())
+				paste_sub_canvas->update_external_files_list(canvas);
+			else
+				paste_sub_canvas->update_external_files_list(paste_sub_canvas);
+			synfig::info("%d",paste_sub_canvas -> size());
+		}
+	}
+	/* synfig::info("___");
+	std::list<std::string>::iterator iter2;
+	for (iter2 = external_image_list_.begin(); iter2!=external_image_list_.end(); iter2++)
+	{
+		std::string fname = *iter2;
+		synfig::info(fname.c_str());
+	}
+	synfig::info("___"); */
+}
+
+void 
+Canvas::update_external_files_list(std::map <std::string, std::string> images_map)
+{
+	std::map<std::string, std::string>::iterator iter;  
+	for (iter = images_map.begin(); iter != images_map.end();  iter++)
+	{
+		
+		external_image_map_.erase((*iter).second);
+		external_image_map_[(*iter).first] = true;
+		/*if(n=="PasteCanvas")
+		{
+			Layer_PasteCanvas* paste_canvas(static_cast<Layer_PasteCanvas*>(layer.get()));
+			Canvas::Handle paste_sub_canvas = paste_canvas->get_sub_canvas();
+			if (paste_sub_canvas->is_inline())
 				paste_sub_canvas->update_external_files_list(canvas, flag);
 			else
 				paste_sub_canvas->update_external_files_list(paste_sub_canvas, flag);
 			synfig::info("%d",paste_sub_canvas -> size());
-		}
+		} */
 	}
 	/* synfig::info("___");
 	std::list<std::string>::iterator iter2;
