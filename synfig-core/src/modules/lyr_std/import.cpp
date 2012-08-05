@@ -89,6 +89,9 @@ Import::set_param(const String & param, const ValueBase &value)
 	IMPORT(time_offset);
 	if(param=="filename" && value.same_type_as(filename))
 	{
+
+		
+		
 		set_param_static(param, value.get_static());
 		if(!get_canvas())
 		{
@@ -99,6 +102,7 @@ Import::set_param(const String & param, const ValueBase &value)
 		}
 
 		String newfilename=value.get(string());
+		//synfig::info(newfilename);
 		String filename_with_path;
 
 		// Get rid of any %20 crap
@@ -178,6 +182,12 @@ Import::set_param(const String & param, const ValueBase &value)
 		filename=newfilename;
 		abs_filename=absolute_path(filename_with_path);
 
+		std::string value_string = value.get(String());
+		
+		get_canvas()->external_files_list_add(value_string, true);
+
+		synfig::info("value: "+value_string);
+		
 		return true;
 	}
 	} catch(...) { set_amount(0); return false; }

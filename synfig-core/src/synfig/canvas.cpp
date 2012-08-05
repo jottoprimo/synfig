@@ -1443,7 +1443,7 @@ Canvas::update_external_files_list(Canvas::Handle canvas)
 			{
 				std::string param_s = param.get(String());
 				bool flag = ((filename_extension(get_file_name()) != ".sifp") || (param_s[0]!='#'));
-				canvas->external_files_list_add(path,param_s, flag);
+				canvas->external_files_list_add(path+ETL_DIRECTORY_SEPARATOR+param_s, flag);
 				//synfig::info("___");
 				//std::map<std::string, bool>::iterator iter2;
 				/* for (iter2 = external_image_map_.begin(); iter2!=external_image_map_.end(); iter2++)
@@ -1476,17 +1476,9 @@ Canvas::update_external_files_list(Canvas::Handle canvas)
 }
 
 void
-Canvas::external_files_list_add(std::string path, std::string param, bool flag)
+Canvas::external_files_list_add(std::string path, bool flag)
 {
-	//external_image_map_.erase(path+ETL_DIRECTORY_SEPARATOR+param);
-	if (flag)
-	{
-		external_image_map_[path+ETL_DIRECTORY_SEPARATOR+param]=true;
-	}
-	else
-	{
-		external_image_map_[path+ETL_DIRECTORY_SEPARATOR+param]=false;
-	}
+	external_image_map_[path]=flag;
 }
 
 std::map <std::string, bool>
