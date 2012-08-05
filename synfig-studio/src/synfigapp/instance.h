@@ -109,7 +109,7 @@ public:
 	synfig::Canvas::Handle get_canvas()const { return canvas_; }
 
 	//! Saves the instance to filename_
-	bool save()const;
+	bool save();
 
 	bool save_as(const synfig::String &filename);
 

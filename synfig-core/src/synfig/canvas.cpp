@@ -1475,36 +1475,6 @@ Canvas::update_external_files_list(Canvas::Handle canvas)
 	synfig::info("___"); */
 }
 
-void 
-Canvas::update_external_files_list(std::map <std::string, std::string> images_map)
-{
-	std::map<std::string, std::string>::iterator iter;  
-	for (iter = images_map.begin(); iter != images_map.end();  iter++)
-	{
-		
-		external_image_map_.erase((*iter).second);
-		external_image_map_[(*iter).first] = true;
-		/*if(n=="PasteCanvas")
-		{
-			Layer_PasteCanvas* paste_canvas(static_cast<Layer_PasteCanvas*>(layer.get()));
-			Canvas::Handle paste_sub_canvas = paste_canvas->get_sub_canvas();
-			if (paste_sub_canvas->is_inline())
-				paste_sub_canvas->update_external_files_list(canvas, flag);
-			else
-				paste_sub_canvas->update_external_files_list(paste_sub_canvas, flag);
-			synfig::info("%d",paste_sub_canvas -> size());
-		} */
-	}
-	/* synfig::info("___");
-	std::list<std::string>::iterator iter2;
-	for (iter2 = external_image_list_.begin(); iter2!=external_image_list_.end(); iter2++)
-	{
-		std::string fname = *iter2;
-		synfig::info(fname.c_str());
-	}
-	synfig::info("___"); */
-}
-
 void
 Canvas::external_files_list_add(std::string path, std::string param, bool flag)
 {
@@ -1555,6 +1525,18 @@ Canvas::get_external_files_list()
 	//}
 	//synfig::info("***");	
 	return all_externals;
+}
+
+void 
+Canvas::set_project_dir(std::string project_dir)
+{
+	project_dir_ = project_dir;
+}
+
+std::string
+Canvas::get_project_dir()
+{
+	return project_dir_;
 }
 
 #ifdef _DEBUG

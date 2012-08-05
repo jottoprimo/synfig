@@ -240,6 +240,8 @@ private:
 	
 	
 	std::map <std::string, bool> external_image_map_;
+
+	std::string project_dir_;
 	
 //public:
 
@@ -614,12 +616,14 @@ public:
 	void set_grow_value(Real x);
 	
 	void update_external_files_list(Canvas::Handle canvas);
-
-	void update_external_files_list( std::map <std::string, std::string> images_map);
 	
 	void external_files_list_add(std::string path, std::string param, bool flag);
 	
 	std::map <std::string, bool> get_external_files_list();
+
+	void set_project_dir(std::string project_dir);
+
+	std::string get_project_dir();
 
 #ifdef _DEBUG
 	void show_externals(String file, int line, String text) const;

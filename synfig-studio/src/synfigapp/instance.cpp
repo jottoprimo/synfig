@@ -166,9 +166,84 @@ Instance::find_canvas_interface(synfig::Canvas::Handle canvas)
 }
 
 bool
-Instance::save()const
+Instance::save()
 {
-	bool ret=save_canvas(get_file_name(),canvas_);
+	std::map <std::string, bool> externals_list = canvas_->get_external_files_list();
+
+	std::string project_dir = canvas_->get_project_dir();
+
+	bool ret;
+
+	if (filename_extension(get_file_name())==".sifp")
+	{
+	//std::map <std::string, std::string> images_map;
+		std::map <std::string, bool>::iterator iter;
+		for (iter = externals_list.begin(); iter != externals_list.end(); iter++)
+		{
+			std::string image_path;
+			if ((*iter).second)
+			{ 
+				image_path = (*iter).first;
+
+				char* image_path_char = new char[image_path.length()+1];
+				strcpy(image_path_char, image_path.c_str());
+			
+				std::string image_name_char = basename(image_path_char);
+				std::string image_name(image_name_char);
+				std::string image_extension = filename_extension(image_name);
+				image_name = filename_sans_extension(image_name);
+				std::string image_name_n = image_name+image_extension;
+				int count = 1;
+				while (images_map.count(image_name_n)==1)
+				{
+					std::string s(strprintf("%d",count));
+					image_name_n = image_name+"_"+s+image_extension;
+				}
+				//synfig::info(image_path.c_str());
+				images_map[image_name_n]=image_path;
+			}
+		}
+	
+		
+
+		//std::string path =get_file_path ();
+		update_path_for_zip(canvas_);
+		
+			
+		// copy files to temp dir
+		std::map <std::string, std::string>::iterator iter2;
+		
+		
+		for (iter2=images_map.begin(); iter2!=images_map.end(); iter2++)
+		{
+			std::string image_name = (*iter2).second;
+			
+			std::ifstream  src(image_name.c_str());
+			std::ofstream  dst((project_dir + ETL_DIRECTORY_SEPARATOR+"images"+ETL_DIRECTORY_SEPARATOR+(*iter2).first).c_str());
+
+			dst << src.rdbuf();
+		} 
+
+		
+		
+		// save as sif to temp dir
+
+		
+		ret=save_canvas(project_dir+ETL_DIRECTORY_SEPARATOR+"main.sif",canvas_);
+
+		update_externals_list(externals_list, images_map);
+
+		/*for (iter = externals_list.begin(); iter != externals_list.end(); iter++)
+		{
+			synfig::info("after: "+(*iter).first);
+		} */
+		
+		// pack everything to zip
+		save_sifp(get_file_name(), externals_list, project_dir+ETL_DIRECTORY_SEPARATOR);
+
+	} else 
+	
+	ret=save_canvas(get_file_name(),canvas_);
 	if(ret)
 	{
 		// if .sifp then pack all files to zip
@@ -196,10 +271,9 @@ Instance::save_as(const synfig::String &file_name)
 	//map <std::string, std::string> images_map;
 	if (filename_extension(file_name) == ".sifp")
 	{
+		std::map <std::string, bool> externals_list = canvas_->get_external_files_list();
 		
 		std::map <std::string, bool>::iterator iter;
-		std::map <std::string, bool> externals_list = canvas_->get_external_files_list();
-
 		for (iter = externals_list.begin(); iter != externals_list.end(); iter++)
 		{
 			std::string image_path;
@@ -253,11 +327,14 @@ Instance::save_as(const synfig::String &file_name)
 		strcpy(file_name_char, file_name.c_str());
 		tmp_dir = tmp_dir+basename(file_name_char)+String("-"+rsuffix);
 		synfig::info("tmp_dir: "+tmp_dir);
-		
+
+		canvas_->set_project_dir(tmp_dir);
+				
 		// copy files to temp dir
 		std::map <std::string, std::string>::iterator iter2;
-
+		
 		mkdir((tmp_dir).c_str(), 0755);
+				
 		mkdir((tmp_dir + ETL_DIRECTORY_SEPARATOR+"images").c_str(),  0755);
 		
 		for (iter2=images_map.begin(); iter2!=images_map.end(); iter2++)
@@ -324,6 +401,7 @@ Instance::save_sifp(std::string file_name, std::map <std::string, bool> external
 	struct zip *zip_archive;
 	int err;
 	zip_archive=zip_open(file_name.c_str(), ZIP_CREATE, &err);
+	if (zip_archive == NULL) zip_archive=zip_open(file_name.c_str(), 0, &err);
 	
 	//ret=save_canvas_to_zip(file_name, canvas_, zip_archive); -- remove from core!!!
 	std::map<std::string, bool>::iterator iter;

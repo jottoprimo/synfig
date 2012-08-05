@@ -250,7 +250,7 @@ synfig::open_canvas_as(const String &filename,const String &as,String &errors,St
 		return Canvas::Handle();
 	}
 	canvas->update_external_files_list(canvas);
-	
+	canvas->set_project_dir(etl::dirname(filename));
 	//canvas->get_external_files_list();
 	return canvas;
 }
