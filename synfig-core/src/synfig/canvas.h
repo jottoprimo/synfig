@@ -618,6 +618,8 @@ public:
 	void update_external_files_list(Canvas::Handle canvas);
 	
 	void external_files_list_add(std::string path, bool flag);
+
+	void external_files_list_reset();
 	
 	std::map <std::string, bool> get_external_files_list();
 

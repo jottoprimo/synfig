@@ -1481,6 +1481,16 @@ Canvas::external_files_list_add(std::string path, bool flag)
 	external_image_map_[path]=flag;
 }
 
+void
+Canvas::external_files_list_reset()
+{
+	std::map <std::string, bool>::iterator iter;
+	for (iter=external_image_map_.begin(); iter != external_image_map_.end(); iter++)
+	{
+		external_image_map_[path]=false;
+	{
+}
+
 std::map <std::string, bool>
 Canvas::get_external_files_list()
 {

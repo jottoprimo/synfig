@@ -183,8 +183,6 @@ Instance::save()
 		
 		ret=save_canvas(project_dir+ETL_DIRECTORY_SEPARATOR+"main.sif",canvas_);
 
-		update_externals_list(externals_list, images_map);
-
 		/*for (iter = externals_list.begin(); iter != externals_list.end(); iter++)
 		{
 			synfig::info("after: "+(*iter).first);
@@ -193,6 +191,8 @@ Instance::save()
 		// pack everything to zip
 		save_sifp(get_file_name(), externals_list, project_dir+ETL_DIRECTORY_SEPARATOR);
 
+		canvas_ -> external_files_list_reset();
+		
 	} else 
 	
 	ret=save_canvas(get_file_name(),canvas_);
@@ -307,7 +307,7 @@ Instance::save_as(const synfig::String &file_name)
 		
 		ret=save_canvas(tmp_dir+ETL_DIRECTORY_SEPARATOR+"main.sif",canvas_);
 
-		update_externals_list(externals_list, images_map);
+		//update_externals_list(externals_list, images_map);
 
 		for (iter = externals_list.begin(); iter != externals_list.end(); iter++)
 		{
@@ -317,7 +317,7 @@ Instance::save_as(const synfig::String &file_name)
 		// pack everything to zip
 		save_sifp(file_name, externals_list, tmp_dir+ETL_DIRECTORY_SEPARATOR);
 		
-		
+		canvas_ -> external_files_list_reset();
 	} 
 	else
 		ret=save_canvas(file_name,canvas_);
@@ -342,7 +342,7 @@ Instance::update_externals_list (std::map<std::string, bool> &externals_list, st
 	for (iter = images_map.begin(); iter != images_map.end();  iter++)
 	{
 		externals_list.erase((*iter).second);
-		externals_list[(*iter).first] = true;
+		externals_list[(*iter).first] = false;
 	}
 	//return externals_list;
 }
