@@ -177,54 +177,6 @@ Instance::save()
 	if (filename_extension(get_file_name())==".sifp")
 	{
 	//std::map <std::string, std::string> images_map;
-		std::map <std::string, bool>::iterator iter;
-		for (iter = externals_list.begin(); iter != externals_list.end(); iter++)
-		{
-			std::string image_path;
-			if ((*iter).second)
-			{ 
-				image_path = (*iter).first;
-
-				char* image_path_char = new char[image_path.length()+1];
-				strcpy(image_path_char, image_path.c_str());
-			
-				std::string image_name_char = basename(image_path_char);
-				std::string image_name(image_name_char);
-				std::string image_extension = filename_extension(image_name);
-				image_name = filename_sans_extension(image_name);
-				std::string image_name_n = image_name+image_extension;
-				int count = 1;
-				while (images_map.count(image_name_n)==1)
-				{
-					std::string s(strprintf("%d",count));
-					image_name_n = image_name+"_"+s+image_extension;
-				}
-				//synfig::info(image_path.c_str());
-				images_map[image_name_n]=image_path;
-			}
-		}
-	
-		
-
-		//std::string path =get_file_path ();
-		update_path_for_zip(canvas_);
-		
-			
-		// copy files to temp dir
-		std::map <std::string, std::string>::iterator iter2;
-		
-		
-		for (iter2=images_map.begin(); iter2!=images_map.end(); iter2++)
-		{
-			std::string image_name = (*iter2).second;
-			
-			std::ifstream  src(image_name.c_str());
-			std::ofstream  dst((project_dir + ETL_DIRECTORY_SEPARATOR+"images"+ETL_DIRECTORY_SEPARATOR+(*iter2).first).c_str());
-
-			dst << src.rdbuf();
-		} 
-
-		
 		
 		// save as sif to temp dir
 
@@ -289,9 +241,10 @@ Instance::save_as(const synfig::String &file_name)
 				std::string image_extension = filename_extension(image_name);
 				image_name = filename_sans_extension(image_name);
 				std::string image_name_n = image_name+image_extension;
-				int count = 1;
+				int count = 0;
 				while (images_map.count(image_name_n)==1)
 				{
+					count++;
 					std::string s(strprintf("%d",count));
 					image_name_n = image_name+"_"+s+image_extension;
 				}
