@@ -1460,8 +1460,8 @@ Canvas::update_external_files_list(Canvas::Handle canvas)
 			Canvas::Handle paste_sub_canvas = paste_canvas->get_sub_canvas();
 			if (paste_sub_canvas->is_inline())
 				paste_sub_canvas->update_external_files_list(canvas);
-			else
-				paste_sub_canvas->update_external_files_list(paste_sub_canvas);
+			//else
+				//paste_sub_canvas->update_external_files_list(paste_sub_canvas);
 			synfig::info("%d",paste_sub_canvas -> size());
 		}
 	}
@@ -1487,8 +1487,8 @@ Canvas::external_files_list_reset()
 	std::map <std::string, bool>::iterator iter;
 	for (iter=external_image_map_.begin(); iter != external_image_map_.end(); iter++)
 	{
-		external_image_map_[path]=false;
-	{
+		external_files_list_add((*iter).first, false);
+	}
 }
 
 std::map <std::string, bool>

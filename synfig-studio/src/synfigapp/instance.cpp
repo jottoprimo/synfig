@@ -307,7 +307,7 @@ Instance::save_as(const synfig::String &file_name)
 		
 		ret=save_canvas(tmp_dir+ETL_DIRECTORY_SEPARATOR+"main.sif",canvas_);
 
-		//update_externals_list(externals_list, images_map);
+		update_externals_list(externals_list, images_map);
 
 		for (iter = externals_list.begin(); iter != externals_list.end(); iter++)
 		{
